@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Áramkör Gyakorló</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #f0f2f5;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --readonly-bg: #e2e6ea;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 15px;
+            background-color: var(--secondary-color);
+            color: #333;
+            -webkit-tap-highlight-color: transparent; /* Mobil érintés jelzés eltüntetése */
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: var(--primary-color); text-align: center; font-size: 1.5rem; margin-top: 0; }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+        
+        /* Mobilbarát gombok */
+        button {
+            padding: 12px 24px;
+            margin: 8px 4px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: transform 0.1s, background-color 0.2s;
+            touch-action: manipulation; /* Gyorsabb reakció mobilon */
+            -webkit-appearance: none; /* iOS gomb kinézet javítás */
+            appearance: none;
+            width: 100%; /* Mobilon teljes szélesség */
+            max-width: 250px;
+        }
+        button:active { transform: scale(0.96); } /* Lenymás effekt */
+        
+        button.secondary { background-color: #6c757d; }
+        button.help-btn { background-color: var(--warning-color); color: #212529; }
+        
+        .problem-area {
+            display: grid;
+            grid-template-columns: 1fr; /* Mobilon alapból 1 oszlop */
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Tableten és asztali gépen 2 oszlop */
+        @media (min-width: 768px) {
+            .problem-area { grid-template-columns: 1fr 1fr; }
+            button { width: auto; }
+        }
+        
+        .diagram-container {
+            text-align: center;
+            padding: 10px;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .diagram-container svg { max-width: 100%; height: auto; }
+        
+        .data-panel h3 { border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top: 0; font-size: 1.2rem;}
+        
+        .input-group {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .input-group label { font-weight: bold; flex: 1; font-size: 1rem;}
+        .input-group input {
+            flex: 1;
+            padding: 10px; /* Nagyobb érintési felület */
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px; /* Hogy ne zoomoljon be iOS-en */
+            width: 80px; 
+            text-align: center;
+        }
+        .input-group .unit { margin-left: 8px; width: 25px; font-weight: bold; font-size: 0.9rem;}
+        
+        input[readonly] { 
+            background-color: var(--readonly-bg); 
+            color: #333; 
+            font-weight: bold; 
+            border: 1px solid #adb5bd;
+        }
+
+        #feedback, #hint-box {
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .correct { background-color: #d4edda; color: var(--success-color); border: 1px solid #c3e6cb;}
+        .incorrect { background-color: #f8d7da; color: var(--error-color); border: 1px solid #f5c6cb;}
+        
+        #hint-box {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            display: none;
+            text-align: left;
+            font-size: 1rem;
+        }
+        
+        /* Akciógombok konténer */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        @media (min-width: 768px) {
+            .action-buttons { flex-direction: row; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⚡ Áramkör Gyakorló</h1>
+    <p style="text-align:center; color:#666; font-size: 0.9rem;">Számítások gyakorlása</p>
+
+    <div class="controls">
+        <h3>Válassz módot:</h3>
+        <button id="btn-soros">Soros kapcsolás</button>
+        <button id="btn-parhuzamos">Párhuzamos kapcsolás</button>
+        <br><br>
+        <p id="current-mode-display" style="font-weight: bold;">Jelenlegi mód: Válassz fentről!</p>
+    </div>
+
+    <div class="problem-area" id="problem-container" style="display: none;">
+        <div>
+            <div class="diagram-container" id="diagram-placeholder"></div>
+        </div>
+
+        <div class="data-panel">
+            <h3>Adatok</h3>
+            <p style="font-size: 0.9em; color: #666;">A <b>szürke mezők</b> az adottak.</p>
+            
+            <div class="input-group"><label>U<sub>áramforrás</sub>:</label><input type="number" id="U_ossz" step="0.01"><span class="unit">V</span></div>
+            <div class="input-group"><label>R<sub>eredő</sub>:</label><input type="number" id="R_ossz" step="0.01"><span class="unit">Ω</span></div>
+            <div class="input-group"><label>I<sub>eredő</sub>:</label><input type="number" id="I_ossz" step="0.01"><span class="unit">A</span></div>
+            <hr>
+            <div class="input-group"><label>R<sub>1</sub>:</label><input type="number" id="R1" step="0.01"><span class="unit">Ω</span></div>
+            <div class="input-group"><label>U<sub>1</sub>:</label><input type="number" id="U1" step="0.01"><span class="unit">V</span></div>
+            <div class="input-group"><label>I<sub>1</sub>:</label><input type="number" id="I1" step="0.01"><span class="unit">A</span></div>
+            <hr>
+            <div class="input-group"><label>R<sub>2</sub>:</label><input type="number" id="R2" step="0.01"><span class="unit">Ω</span></div>
+            <div class="input-group"><label>U<sub>2</sub>:</label><input type="number" id="U2" step="0.01"><span class="unit">V</span></div>
+            <div class="input-group"><label>I<sub>2</sub>:</label><input type="number" id="I2" step="0.01"><span class="unit">A</span></div>
+
+            <div class="action-buttons">
+                <button id="btn-check">Ellenőrzés</button>
+                <button id="btn-new" class="secondary">Új feladat</button>
+                <button id="btn-help" class="help-btn">Segítség</button>
+            </div>
+             <div id="hint-box"></div>
+        </div>
+    </div>
+
+    <div id="feedback"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // --- Eseménykezelők hozzáadása (Biztonságos módszer) ---
+    document.getElementById('btn-soros').addEventListener('click', function() { initGame('soros'); });
+    document.getElementById('btn-parhuzamos').addEventListener('click', function() { initGame('parhuzamos'); });
+    document.getElementById('btn-check').addEventListener('click', checkAnswer);
+    document.getElementById('btn-new').addEventListener('click', generateProblem);
+    document.getElementById('btn-help').addEventListener('click', showSmartHint);
+
+    // --- Változók és Logika ---
+    let currentMode = null;
+    let solution = {};
+
+    function gcd(a, b) { return !b ? a : gcd(b, a % b); }
+    function lcm(a, b) { return (a * b) / gcd(a, b); }
+    function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function randomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function round2(num) { return Math.round((num + Number.EPSILON) * 100) / 100; }
+
+    function generateSeriesParams() {
+        const niceCurrents = [0.1, 0.2, 0.25, 0.4, 0.5, 0.6, 0.8, 1, 1.2, 1.5, 2, 2.5, 3, 4, 5];
+        while (true) {
+            let r1 = randomInt(10, 150);
+            let r2 = randomInt(10, 150);
+            let i = randomItem(niceCurrents);
+            let r_total = r1 + r2;
+            let u_total = i * r_total;
+            if (u_total >= 30 && u_total <= 300) {
+                 return { R1: r1, R2: r2, U_ossz: round2(u_total), I_target: i };
+            }
+        }
+    }
+
+    function generateParallelParams() {
+        let attempts = 0;
+        while (attempts < 5000) {
+            attempts++;
+            let r1 = randomInt(10, 150);
+            let r2 = randomInt(10, 150);
+            let r_eq = (r1 * r2) / (r1 + r2);
+            if (Math.abs((r_eq * 100) % 1) > 0.01 && Math.abs((r_eq * 100) % 1) < 0.99) continue;
+            
+            let commonMultiple = lcm(r1, r2);
+            let possibleVoltages = [];
+            for (let k = 1; k * commonMultiple <= 300; k++) {
+                let v = k * commonMultiple;
+                if (v >= 30) possibleVoltages.push(v);
+            }
+            if (possibleVoltages.length > 0) {
+                return { R1: r1, R2: r2, U_ossz: randomItem(possibleVoltages) };
+            }
+        }
+        return { R1: 60, R2: 30, U_ossz: 60 };
+    }
+
+    function initGame(mode) {
+        currentMode = mode;
+        document.getElementById('current-mode-display').innerText = `Jelenlegi mód: ${mode.charAt(0).toUpperCase() + mode.slice(1)} kapcsolás`;
+        document.getElementById('problem-container').style.display = 'grid';
+        
+        // Gördítés a feladathoz mobilon
+        setTimeout(() => {
+            document.getElementById('problem-container').scrollIntoView({behavior: 'smooth'});
+        }, 100);
+
+        drawDiagram(mode);
+        generateProblem();
+    }
+
+    function resetUI() {
+        const inputs = document.querySelectorAll('.data-panel input');
+        inputs.forEach(input => {
+            input.value = '';
+            input.removeAttribute('readonly');
+            input.style.backgroundColor = 'white';
+        });
+        document.getElementById('feedback').innerText = '';
+        document.getElementById('feedback').className = '';
+        document.getElementById('hint-box').style.display = 'none';
+        document.getElementById('hint-box').innerText = '';
+    }
+
+    function generateProblem() {
+        resetUI();
+        if (!currentMode) return;
+
+        let params;
+        if (currentMode === 'soros') {
+            params = generateSeriesParams();
+            solution.R1 = params.R1;
+            solution.R2 = params.R2;
+            solution.U_ossz = params.U_ossz;
+            solution.R_ossz = round2(solution.R1 + solution.R2);
+            solution.I_ossz = round2(solution.U_ossz / solution.R_ossz);
+            solution.I1 = solution.I_ossz;
+            solution.I2 = solution.I_ossz;
+            solution.U1 = round2(solution.I1 * solution.R1);
+            solution.U2 = round2(solution.I2 * solution.R2);
+        } else { 
+            params = generateParallelParams();
+            solution.R1 = params.R1;
+            solution.R2 = params.R2;
+            solution.U_ossz = params.U_ossz;
+            solution.R_ossz = round2((solution.R1 * solution.R2) / (solution.R1 + solution.R2));
+            solution.U1 = solution.U_ossz;
+            solution.U2 = solution.U_ossz;
+            solution.I1 = round2(solution.U1 / solution.R1);
+            solution.I2 = round2(solution.U2 / solution.R2);
+            solution.I_ossz = round2(solution.I1 + solution.I2);
+        }
+
+        let scenarios = [];
+        if (currentMode === 'soros') {
+            scenarios = [
+                ['R1', 'R2', 'U_ossz'], 
+                ['R1', 'R2', 'I_ossz'], 
+                ['R1', 'U1', 'R2'],     
+                ['U_ossz', 'I_ossz', 'R1'], 
+                ['U1', 'U2', 'I1']      
+            ];
+        } else { 
+            scenarios = [
+                ['R1', 'R2', 'U_ossz'], 
+                ['U_ossz', 'I1', 'I2'], 
+                ['I_ossz', 'U_ossz', 'R1'], 
+                ['R1', 'I1', 'R2']      
+            ];
+        }
+
+        const selectedScenario = randomItem(scenarios);
+        selectedScenario.forEach(key => {
+            setInputVal(key, solution[key], true);
+        });
+    }
+
+    function setInputVal(id, value, isReadonly = false) {
+        const field = document.getElementById(id);
+        field.value = value;
+        if (isReadonly) {
+            field.setAttribute('readonly', true);
+        }
+    }
+
+    function showSmartHint() {
+        const hintBox = document.getElementById('hint-box');
+        hintBox.style.display = 'block';
+        const hasVal = (id) => document.getElementById(id).value !== '';
+        
+        let hints = [];
+        const components = [
+            { id: '', name: 'Eredő adatoknál', u: 'U_ossz', i: 'I_ossz', r: 'R_ossz' },
+            { id: '1', name: '1-es fogyasztónál', u: 'U1', i: 'I1', r: 'R1' },
+            { id: '2', name: '2-es fogyasztónál', u: 'U2', i: 'I2', r: 'R2' }
+        ];
+
+        components.forEach(c => {
+            if (!hasVal(c.u) && hasVal(c.i) && hasVal(c.r)) hints.push(`💡 ${c.name}: Számold ki U-t! (U = I · R)`);
+            if (hasVal(c.u) && !hasVal(c.i) && hasVal(c.r)) hints.push(`💡 ${c.name}: Számold ki I-t! (I = U / R)`);
+            if (hasVal(c.u) && hasVal(c.i) && !hasVal(c.r)) hints.push(`💡 ${c.name}: Számold ki R-t! (R = U / I)`);
+        });
+
+        if (currentMode === 'soros') {
+            if (hasVal('I_ossz') && (!hasVal('I1') || !hasVal('I2'))) hints.push("💡 Soros: Az áram mindenhol ugyanakkora! (I_eredő = I1 = I2)");
+            else if ((hasVal('I1') || hasVal('I2')) && !hasVal('I_ossz')) hints.push("💡 Soros: Az áram mindenhol ugyanakkora!");
+            if (hasVal('U1') && hasVal('U2') && !hasVal('U_ossz')) hints.push("💡 Feszültségek: U_áramforrás = U1 + U2");
+            if (hasVal('U_ossz') && hasVal('U1') && !hasVal('U2')) hints.push("💡 Feszültségek: U2 = U_áramforrás - U1");
+            if (hasVal('R1') && hasVal('R2') && !hasVal('R_ossz')) hints.push("💡 Ellenállások: R_eredő = R1 + R2");
+        } else { 
+            if (hasVal('U_ossz') && (!hasVal('U1') || !hasVal('U2'))) hints.push("💡 Párhuzamos: A feszültség közös! (U_áramforrás = U1 = U2)");
+            else if ((hasVal('U1') || hasVal('U2')) && !hasVal('U_ossz')) hints.push("💡 Párhuzamos: A feszültség közös!");
+            if (hasVal('I1') && hasVal('I2') && !hasVal('I_ossz')) hints.push("💡 Áramerősségek: I_eredő = I1 + I2");
+            if (hasVal('I_ossz') && hasVal('I1') && !hasVal('I2')) hints.push("💡 Áramerősségek: I2 = I_eredő - I1");
+            if (hints.length === 0 && hasVal('R1') && hasVal('R2') && !hasVal('R_ossz')) hints.push("💡 Eredő ellenállás: R_eredő = (R1 · R2) / (R1 + R2)");
+        }
+
+        if (hints.length > 0) hintBox.innerHTML = hints[0];
+        else hintBox.innerText = "Nincs több ötletem, vagy már kész vagy!";
+    }
+
+    function checkAnswer() {
+        const feedback = document.getElementById('feedback');
+        const inputs = ['R_ossz', 'I_ossz', 'U1', 'I1', 'U2', 'I2', 'U_ossz', 'R1', 'R2'];
+        let allCorrect = true;
+        let errorCount = 0;
+
+        inputs.forEach(id => {
+            const inputField = document.getElementById(id);
+            if (inputField.hasAttribute('readonly')) return;
+
+            const userValue = parseFloat(inputField.value);
+            const correctValue = solution[id];
+            
+            if (isNaN(userValue) || Math.abs(userValue - correctValue) > 0.05) {
+                 inputField.style.backgroundColor = '#f8d7da';
+                 allCorrect = false;
+                 errorCount++;
+            } else {
+                 inputField.style.backgroundColor = '#d4edda';
+            }
+        });
+
+        if (allCorrect) {
+            feedback.innerText = "✅ Helyes!";
+            feedback.className = 'correct';
+            document.getElementById('hint-box').style.display = 'none';
+        } else {
+            feedback.innerText = `⚠️ ${errorCount} mező hibás.`;
+            feedback.className = 'incorrect';
+        }
+    }
+    
+    function drawDiagram(mode) {
+        const diagramDiv = document.getElementById('diagram-placeholder');
+        const strokeStyle = 'stroke="#000" stroke-width="2" fill="none"';
+        const resistorStyle = 'fill="#fff" stroke="#000" stroke-width="2"';
+        const textStyle = 'font-family="Arial" font-size="14" text-anchor="middle"';
+
+        if (mode === 'soros') {
+            diagramDiv.innerHTML = `
+            <svg width="300" height="180" viewBox="0 0 400 250" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 100 200 L 100 50 L 300 50 L 300 200" ${strokeStyle}/>
+                <circle cx="100" cy="200" r="6" fill="#fff" stroke="#000" stroke-width="2"/>
+                <circle cx="300" cy="200" r="6" fill="#fff" stroke="#000" stroke-width="2"/>
+                <text x="100" y="235" ${textStyle}>+</text>
+                <text x="300" y="235" ${textStyle}>-</text>
+                <text x="200" y="235" ${textStyle} font-weight="bold">U<tspan baseline-shift="sub" font-size="12">forrás</tspan></text>
+                <rect x="130" y="35" width="60" height="30" ${resistorStyle}/>
+                <text x="160" y="25" ${textStyle}>R<tspan baseline-shift="sub" font-size="12">1</tspan></text>
+                <rect x="210" y="35" width="60" height="30" ${resistorStyle}/>
+                <text x="240" y="25" ${textStyle}>R<tspan baseline-shift="sub" font-size="12">2</tspan></text>
+            </svg>`;
+        } else {
+            diagramDiv.innerHTML = `
+            <svg width="300" height="200" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 120 250 L 120 150" ${strokeStyle}/>
+                <path d="M 280 250 L 280 150" ${strokeStyle}/>
+                <path d="M 120 150 L 120 50 L 280 50 L 280 150" ${strokeStyle}/>
+                <path d="M 120 150 L 280 150" ${strokeStyle}/>
+                <circle cx="120" cy="150" r="4" fill="#000"/>
+                <circle cx="280" cy="150" r="4" fill="#000"/>
+                <circle cx="120" cy="250" r="6" fill="#fff" stroke="#000" stroke-width="2"/>
+                <circle cx="280" cy="250" r="6" fill="#fff" stroke="#000" stroke-width="2"/>
+                <text x="120" y="285" ${textStyle}>+</text>
+                <text x="280" y="285" ${textStyle}>-</text>
+                <text x="200" y="285" ${textStyle} font-weight="bold">U<tspan baseline-shift="sub" font-size="12">forrás</tspan></text>
+                <rect x="170" y="35" width="60" height="30" ${resistorStyle}/>
+                <text x="200" y="25" ${textStyle}>R<tspan baseline-shift="sub" font-size="12">1</tspan></text>
+                <rect x="170" y="135" width="60" height="30" ${resistorStyle}/>
+                <text x="200" y="125" ${textStyle}>R<tspan baseline-shift="sub" font-size="12">2</tspan></text>
+            </svg>`;
+        }
+    }
+});
+</script>
+
+</body>
+</html>

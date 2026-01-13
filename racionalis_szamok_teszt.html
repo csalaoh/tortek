@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Műveletek racionális számokkal</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(180deg, #e0f7fa 0%, #f3e5f5 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        h1 {
+            color: #004d40;
+            margin: 10px 0 6px 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, .08);
+            text-align: center;
+        }
+
+        .subtitle {
+            margin: 0 0 16px 0;
+            color: #4a148c;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .container {
+            background: #fff;
+            padding: 26px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+            max-width: 980px;
+            width: 100%;
+            position: relative;
+            border: 3px solid rgba(0, 150, 136, .12);
+        }
+
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-screen {
+            display: none;
+        }
+
+        #report-screen {
+            display: none;
+            padding: 6px 0;
+        }
+
+        .warning-box {
+            background: #fff8e1;
+            border: 3px solid #f57f17;
+            padding: 16px 16px 12px 16px;
+            border-radius: 12px;
+            margin: 10px 0 14px 0;
+            width: 100%;
+            box-sizing: border-box;
+            color: #3e2723;
+            font-weight: 800;
+        }
+
+        .warning-box h3 {
+            margin: 0 0 6px 0;
+        }
+
+        #name-input {
+            font-size: 1.3em;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 2px solid #00bcd4;
+            width: min(560px, 92%);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        button {
+            padding: 14px 22px;
+            font-size: 1.05em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform .1s, filter .15s;
+            font-weight: 900;
+            margin: 6px;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            filter: brightness(1.02);
+        }
+
+        button:active {
+            transform: scale(.98);
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-start {
+            background: #00acc1;
+            color: #fff;
+        }
+
+        .btn-resume {
+            background: #43a047;
+            color: #fff;
+        }
+
+        .btn-reset {
+            background: #ff9800;
+            color: #fff;
+        }
+
+        .btn-pdf {
+            background: #1565c0;
+            color: #fff;
+        }
+
+        .btn-pdf small {
+            font-weight: 800;
+            opacity: .9;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #004d40;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-weight: 1000;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .student-name-display {
+            color: #b2ebf2;
+        }
+
+        .problem-container {
+            margin: 10px 0 14px 0;
+            background: #ffffff;
+            border: 2px solid #b2ebf2;
+            border-radius: 14px;
+            padding: 18px;
+            min-height: 96px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: .85em;
+            font-weight: 1000;
+            letter-spacing: .3px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .tag-frac {
+            background: #e8f5e9;
+            color: #1b5e20;
+            border: 2px solid #a5d6a7;
+        }
+
+        .tag-dec {
+            background: #ede7f6;
+            color: #4a148c;
+            border: 2px solid #d1c4e9;
+        }
+
+        .expr {
+            font-size: 2.0em;
+            font-weight: 1000;
+            line-height: 1.25;
+            color: #263238;
+            word-break: break-word;
+        }
+
+        .op {
+            color: #00838f;
+            padding: 0 10px;
+        }
+
+        .paren {
+            color: #6a1b9a;
+            font-weight: 1100;
+            padding: 0 4px;
+        }
+
+        .negative {
+            color: #ad1457;
+        }
+
+        /* Fraction rendering (kérdésben) */
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 6px;
+            min-width: 28px;
+        }
+
+        .numerator {
+            border-bottom: 2px solid #263238;
+            padding: 0 6px;
+            display: block;
+            line-height: 1.05;
+        }
+
+        .denominator {
+            padding: 0 6px;
+            display: block;
+            line-height: 1.05;
+        }
+
+        .mixed {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 4px;
+        }
+
+        .whole {
+            font-weight: 1100;
+            color: #37474f;
+        }
+
+        .answer-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .input-hint {
+            font-size: .95em;
+            color: #666;
+            text-align: center;
+            max-width: 780px;
+            font-weight: 700;
+        }
+
+        /* Decimal input */
+        .decimal-input {
+            font-size: 1.2em;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 2px solid #00bcd4;
+            width: min(520px, 92%);
+            text-align: center;
+        }
+
+        /* ===== ÚJ: TÖRT INPUT "RÉGI STÍLUSBAN" ===== */
+        .frac-answer-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .whole-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .whole-input label {
+            font-size: .85em;
+            font-weight: 1000;
+            color: #37474f;
+        }
+
+        .whole-input input {
+            font-size: 1.15em;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 2px solid #80deea;
+            width: min(140px, 38vw);
+            text-align: center;
+        }
+
+        .frac-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .frac-input label {
+            font-size: .85em;
+            font-weight: 1000;
+            color: #37474f;
+        }
+
+        .frac-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 10px;
+            border-radius: 14px;
+            border: 2px solid #80deea;
+            background: #f7feff;
+            min-width: 180px;
+        }
+
+        .frac-stack input {
+            font-size: 1.15em;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 2px solid rgba(0, 0, 0, .08);
+            width: min(160px, 46vw);
+            text-align: center;
+            background: #fff;
+        }
+
+        .frac-bar {
+            width: 92%;
+            height: 3px;
+            background: #263238;
+            border-radius: 999px;
+            margin: 8px 0;
+            opacity: .9;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn-prev {
+            background: #9e9e9e;
+            color: #fff;
+        }
+
+        .btn-next {
+            background: #00acc1;
+            color: #fff;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, .6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 18px;
+            box-sizing: border-box;
+        }
+
+        .modal-box {
+            background: #fff;
+            padding: 22px;
+            border-radius: 16px;
+            width: min(520px, 100%);
+            text-align: center;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, .35);
+            border: 4px solid #00acc1;
+        }
+
+        .modal-answer-preview {
+            font-size: 1.6em;
+            color: #004d40;
+            font-weight: 1100;
+            margin: 14px 0;
+            background: #e0f7fa;
+            padding: 10px 12px;
+            border-radius: 12px;
+            word-break: break-word;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .btn-modal-yes {
+            background: #43a047;
+            color: #fff;
+        }
+
+        .btn-modal-no {
+            background: #e53935;
+            color: #fff;
+        }
+
+        /* Report */
+        .summary-box {
+            background: #e8f5e9;
+            border: 4px solid #43a047;
+            border-radius: 16px;
+            padding: 22px;
+            margin: 10px 0 18px 0;
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .10);
+        }
+
+        .summary-score {
+            font-size: 1.15em;
+            color: #37474f;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #c8e6c9;
+            padding-bottom: 10px;
+            font-weight: 1000;
+        }
+
+        .grade-label {
+            font-size: .9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            font-weight: 1000;
+        }
+
+        .grade-value {
+            font-size: 4.2rem;
+            font-weight: 1200;
+            color: #2e7d32;
+            line-height: 1;
+        }
+
+        #report-output {
+            width: 100%;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+            padding: 14px;
+            border: 2px solid #004d40;
+            border-radius: 12px;
+            resize: none;
+            box-sizing: border-box;
+            margin-top: 8px;
+        }
+
+        .btn-send {
+            background: #673ab7;
+            color: #fff;
+            width: min(560px, 100%);
+            margin: 8px 0 4px 0;
+        }
+
+        #status-message {
+            margin-top: 10px;
+            font-weight: 1000;
+            min-height: 1.5em;
+            color: #37474f;
+            text-align: center;
+        }
+
+        /* Resume area */
+        #resume-area {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-top: 6px;
+        }
+
+        #new-game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* ===== PDF render container (rejtett) ===== */
+        #pdf-render {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 794px;
+            /* ~A4 */
+            background: #fff;
+            color: #111;
+            padding: 32px;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+            /* fontos: maradjon a képernyőn belül, csak legyen láthatatlan */
+            opacity: 0.001;
+            /* 0 néha bugos, ezért 0.001 */
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+
+
+        #pdf-render h2,
+        #pdf-render h3 {
+            margin: 0 0 10px 0;
+        }
+
+        .pdf-meta {
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 14px;
+        }
+
+        .pdf-section {
+            margin-top: 18px;
+        }
+
+        .pdf-q {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .pdf-num {
+            font-weight: 1000;
+            width: 36px;
+            flex: 0 0 36px;
+        }
+
+        .pdf-expr {
+            font-weight: 900;
+            flex: 1;
+        }
+
+        .pdf-space {
+            border-bottom: 1px solid #999;
+            height: 18px;
+            margin-top: 6px;
+            width: 100%;
+        }
+
+        .pdf-ans {
+            font-weight: 900;
+            color: #1b5e20;
+        }
+
+        .pdf-note {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #555;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Biztosan ez a válaszod?</h3>
+            <div id="modal-answer-display" class="modal-answer-preview"></div>
+            <p style="font-size:.95em; color:#666; margin:0; font-weight:700;">
+                Igen: mentjük és továbblépünk. Nem: javíthatsz.
+            </p>
+            <div class="modal-buttons">
+                <button class="btn-modal-no" onclick="closeModal(false)">❌ Nem</button>
+                <button class="btn-modal-yes" onclick="closeModal(true)">✅ Igen</button>
+            </div>
+        </div>
+    </div>
+
+    <h1>📘 Műveletek racionális számokkal</h1>
+    <div class="subtitle">Kombó teszt: Tört + Tizedes (8 + 8 feladat)</div>
+
+    <div class="container">
+
+        <div id="start-screen">
+            <h2>Szia! Hogy hívnak?</h2>
+
+            <div class="warning-box">
+                <h3>❗ Fontos tudnivalók</h3>
+                <p>Ez a teszt <strong>16 feladatot</strong> tartalmaz: <strong>8 törtes</strong> és <strong>8
+                        tizedes</strong>.</p>
+                <p>Minden feladat <strong>1 pont</strong>. Maximális pont: <strong>16</strong>.</p>
+                <p>Tizedes válasznál írhatsz <strong>vesszőt</strong> vagy <strong>pontot</strong> (pl. 3,25 = 3.25).
+                </p>
+                <p>Törtös válasznál: <strong>egész</strong> (ha van), majd <strong>számláló</strong> felül és
+                    <strong>nevező</strong> alul.
+                </p>
+                <p style="margin-top:10px; border-top: 1px solid #f57f17; padding-top:8px;">
+                    💡 Ha véletlenül bezárod az ablakot, visszajöhetsz és folytathatod.
+                </p>
+            </div>
+
+            <div id="resume-area">
+                <h3 style="color:#e65100; margin:10px 0 6px 0;">Találtam egy félbehagyott tesztet!</h3>
+                <p style="margin:4px 0;">Tanuló: <strong id="resume-name"></strong></p>
+                <p style="margin:4px 0 10px 0;">Feladat: <strong id="resume-progress"></strong></p>
+                <button class="btn-resume" onclick="resumeGame()">▶️ Folytatás</button>
+                <button class="btn-reset" onclick="resetAndStartNew()">🗑️ Újrakezdés</button>
+            </div>
+
+            <!-- Új: PDF gomb 
+            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:8px;">
+                <button class="btn-pdf" type="button" onclick="generatePdfStudent()">
+                    📄 Diák PDF
+                    <br><small>(megoldókulcs nélkül)</small>
+                </button>
+
+                <button class="btn-pdf" type="button" onclick="generatePdfTeacher()">
+                    🔐 Tanár PDF
+                    <br><small>(megoldókulccsal a végén)</small>
+                </button>
+            </div>
+
+            -->
+            <form id="new-game-area">
+                <input type="text" id="name-input" placeholder="Írd ide a neved..." required />
+                <button type="submit" class="btn-start">Teszt indítása</button>
+            </form>
+        </div>
+
+        <div id="game-screen">
+            <div class="top-bar">
+                <div>
+                    <span class="student-name-display" id="display-name">Tanuló</span>
+                    <span> | </span>
+                    <span id="progress-text">1 / 16. feladat</span>
+                </div>
+                <div id="type-pill"></div>
+            </div>
+
+            <div class="problem-container">
+                <div id="problem-box" class="expr"></div>
+            </div>
+
+            <div class="answer-section" id="answer-section"></div>
+
+            <div class="nav-buttons">
+                <button class="btn-prev" id="btn-prev" onclick="prevProblem()">⬅️ Előző</button>
+                <button class="btn-next" id="btn-next" onclick="attemptNext()">Következő ➡️</button>
+            </div>
+        </div>
+
+        <div id="report-screen">
+            <h2 style="margin: 6px 0 10px 0;">📊 Eredmény</h2>
+
+            <div class="summary-box">
+                <div class="summary-score">
+                    Elért pontszám: <strong id="final-score"></strong> / <span id="final-max"></span> pont (<span
+                        id="final-percent"></span>%)
+                </div>
+                <div>
+                    <div class="grade-label">Érdemjegy</div>
+                    <div class="grade-value" id="final-grade"></div>
+                </div>
+            </div>
+
+            <div id="status-message"></div>
+
+            <button id="btn-send-data" class="btn-send" onclick="sendReportToGoogle()">
+                🚀 Eredmény küldése a Tanárnak
+            </button>
+
+            <p style="margin:14px 0 6px 0; font-size:.95em; color:#666; font-weight:800;">
+                Ha a küldés nem sikerülne, itt a biztonsági másolat:
+            </p>
+            <textarea id="report-output" readonly rows="10"></textarea>
+
+            <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+                <button onclick="copyReport()" style="background:#455a64; color:#fff;">Másolás vágólapra</button>
+                <button onclick="window.location.reload()" style="background:#ff9800; color:#fff;">Újrakezdés</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF render container -->
+    <div id="pdf-render" aria-hidden="true"></div>
+
+    <!-- PDF library (online kell) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        "use strict";
+
+        /* ==========================
+           BEÁLLÍTÁSOK
+        ========================== */
+        const TOTAL_QUESTIONS = 16;
+
+        // Ide másold be a WebApp /exec linkedet:
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAaMcBrUw2lujLKltwkw2jwRHhW_7B9W9vURqQUqxTAZN2eclh_6f0AB_mQ1S-m7gJfw/exec"; // pl.: "https://script.google.com/macros/s/.../exec"
+
+        const STORAGE_KEY = "racionalis_komboteszt_state_v2";
+
+        /* ==========================
+           BEADÁS UTÁNI ZÁRÁS
+        ========================== */
+        let FINALIZED = false;
+
+        function lockNavigationAfterSubmit() {
+            try {
+                history.pushState({ final: true }, "", location.href);
+                window.addEventListener("popstate", () => {
+                    if (FINALIZED) history.pushState({ final: true }, "", location.href);
+                });
+            } catch { }
+        }
+
+        /* ==========================
+           SEGÉDEK
+        ========================== */
+        function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b !== 0) { const t = a % b; a = b; b = t; } return a; }
+        function simplifyFrac(f) {
+            let n = f.n, d = f.d;
+            if (d < 0) { n = -n; d = -d; }
+            if (n === 0) return { n: 0, d: 1 };
+            const g = gcd(n, d);
+            return { n: n / g, d: d / g };
+        }
+        function addFrac(a, b) { return simplifyFrac({ n: a.n * b.d + b.n * a.d, d: a.d * b.d }); }
+        function subFrac(a, b) { return simplifyFrac({ n: a.n * b.d - b.n * a.d, d: a.d * b.d }); }
+        function mulFrac(a, b) { return simplifyFrac({ n: a.n * b.n, d: a.d * b.d }); }
+        function divFrac(a, b) {
+            if (b.n === 0) return { n: 0, d: 1 };
+            return simplifyFrac({ n: a.n * b.d, d: a.d * b.n });
+        }
+        function equalFrac(a, b) { return a.n * b.d === b.n * a.d; }
+        function fracValueCmp(a, b) {
+            const L = a.n * b.d;
+            const R = b.n * a.d;
+            return L < R ? -1 : (L > R ? 1 : 0);
+        }
+
+        /* ==========================
+           "TÍZES SKÁLÁZÓ" SZŰRŐ
+           Tiltjuk: 10,100,... és 0,1; 0,01; 0,001 (vagyis 1/10^k)
+        ========================== */
+        function isPowerOfTenInt(x) {
+            x = Math.abs(x);
+            if (x < 1) return false;
+            while (x % 10 === 0) x /= 10;
+            return x === 1;
+        }
+        function isTenScalingFrac(fr) {
+            fr = simplifyFrac(fr);
+            const an = Math.abs(fr.n), ad = Math.abs(fr.d);
+            // 10,100,... (an is power of ten and denominator 1)
+            if (ad === 1 && isPowerOfTenInt(an)) return true;
+            // 0,1 / 0,01 / 0,001 ... (numerator 1, denominator power of ten)
+            if (an === 1 && isPowerOfTenInt(ad)) return true;
+            return false;
+        }
+
+        /* ==========================
+           TIZEDES PARSER (pontos)
+        ========================== */
+        function parseDecimalToFraction(raw) {
+            if (raw == null) return null;
+            let s = String(raw).trim();
+            if (s === "") return null;
+            s = s.replace(/\s+/g, "").replace(/,/g, ".");
+            if (s.startsWith("+")) s = s.slice(1);
+            if (!/^-?\d+(\.\d+)?$/.test(s)) return null;
+
+            const neg = s.startsWith("-");
+            if (neg) s = s.slice(1);
+            const parts = s.split(".");
+            const intPart = parts[0] || "0";
+            const fracPart = parts[1] || "";
+            const scale = Math.pow(10, fracPart.length);
+            const n = parseInt(intPart, 10) * scale + (fracPart === "" ? 0 : parseInt(fracPart, 10));
+            return simplifyFrac({ n: neg ? -n : n, d: scale });
+        }
+        function fracToDecimalString(f) {
+            f = simplifyFrac({ n: f.n, d: f.d });
+            if (f.d === 1) return String(f.n);
+
+            let d = f.d;
+            let a = 0, b = 0;
+            while (d % 2 === 0) { d /= 2; a++; }
+            while (d % 5 === 0) { d /= 5; b++; }
+            if (d !== 1) return `${f.n}/${f.d}`;
+
+            const k = Math.max(a, b);
+            const factor = Math.pow(10, k);
+            const scaledN = f.n * (factor / f.d);
+            const neg = scaledN < 0;
+            const absN = Math.abs(scaledN);
+            const intStr = String(Math.floor(absN / factor));
+            let fracStr = String(absN % factor).padStart(k, "0").replace(/0+$/, "");
+            const out = fracStr.length ? `${intStr}.${fracStr}` : intStr;
+            return neg ? `-${out}` : out;
+        }
+        function toHuDecimal(s) { return String(s).replace(/\./g, ","); }
+
+        /* ==========================
+           FRAKCIÓ (kérdés megjelenítés)
+        ========================== */
+        function fracHTML(f) {
+            f = simplifyFrac(f);
+            const neg = f.n < 0;
+            const n = Math.abs(f.n);
+            const d = f.d;
+            const negSpan = neg ? `<span class="negative">−</span>` : "";
+            return `${negSpan}<span class="fraction"><span class="numerator">${n}</span><span class="denominator">${d}</span></span>`;
+        }
+        function mixedHTML(whole, frac) {
+            const wNeg = whole < 0;
+            const wAbs = Math.abs(whole);
+            const wSpan = `<span class="whole ${wNeg ? "negative" : ""}">${wNeg ? "−" : ""}${wAbs}</span>`;
+            return `<span class="mixed">${wSpan}${fracHTML(frac)}</span>`;
+        }
+
+        /* ===== Megoldókulcshoz: tört -> vegyes szöveg ===== */
+        function fracToMixedText(fr) {
+            fr = simplifyFrac(fr);
+            const neg = fr.n < 0;
+            const an = Math.abs(fr.n);
+            const d = fr.d;
+            const whole = Math.floor(an / d);
+            const rem = an % d;
+            const sign = neg ? "−" : "";
+            if (d === 1) return `${fr.n}`;
+            if (whole === 0) return `${sign}${rem}/${d}`;
+            if (rem === 0) return `${sign}${whole}`;
+            return `${sign}${whole} ${rem}/${d}`;
+        }
+
+        /* ==========================
+           VÁLASZ PARSER TÖRTHÖZ (egész + számláló + nevező)
+        ========================== */
+        function parseMixedAnswer({ w, n, d }) {
+            const ws = (w ?? "").trim();
+            const ns = (n ?? "").trim();
+            const ds = (d ?? "").trim();
+
+            if (ws === "" && ns === "" && ds === "") return null;
+
+            // csak egész
+            if (ns === "" && ds === "") {
+                if (ws === "") return null;
+                if (!/^[+-]?\d+$/.test(ws)) return null;
+                return simplifyFrac({ n: parseInt(ws, 10), d: 1 });
+            }
+
+            if (ns === "" || ds === "") return null;
+            if (!/^[+-]?\d+$/.test(ns) || !/^[+-]?\d+$/.test(ds)) return null;
+
+            const denom = parseInt(ds, 10);
+            if (denom === 0) return null;
+
+            const num = parseInt(ns, 10);
+            const whole = ws === "" ? 0 : ((/^[+-]?\d+$/.test(ws)) ? parseInt(ws, 10) : NaN);
+            if (Number.isNaN(whole)) return null;
+
+            let totalN;
+            if (whole < 0) {
+                totalN = whole * denom - Math.abs(num);
+                if (num < 0) totalN = whole * denom + num;
+            } else {
+                totalN = whole * denom + num;
+            }
+            return simplifyFrac({ n: totalN, d: denom });
+        }
+
+        /* ==========================
+           TIZEDES SZÁMGENERÁLÁS
+           - nem egész operandus
+           - nem 0,1 / 0,01 / 0,001 (tízes skálázó)
+        ========================== */
+        function makeStrictNonIntegerDecimal(maxAbs, maxDp, allowNegative) {
+            const dp = Math.max(1, randInt(1, Math.max(1, maxDp)));
+            const scale = Math.pow(10, dp);
+
+            let absN;
+            do {
+                absN = randInt(1, Math.max(1, maxAbs * scale));
+            } while (absN % scale === 0); // ne legyen egész
+
+            let n = absN;
+            if (allowNegative && Math.random() < 0.35) n = -n;
+
+            const f = simplifyFrac({ n, d: scale });
+
+            // tiltott (10/100/0.1/0.01/0.001 jelleg)
+            if (f.n === 0 || f.d === 1 || isTenScalingFrac(f)) return makeStrictNonIntegerDecimal(maxAbs, maxDp, allowNegative);
+
+            const str = fracToDecimalString(f);
+            if (!str.includes(".")) return makeStrictNonIntegerDecimal(maxAbs, maxDp, allowNegative);
+
+            return { str, frac: f };
+        }
+        function makeTermDec(maxAbs, maxDp, allowNeg) {
+            const x = makeStrictNonIntegerDecimal(maxAbs, maxDp, allowNeg);
+            return { hu: toHuDecimal(x.str), frac: x.frac, neg: x.frac.n < 0 };
+        }
+        function makeIntegerDivisor(minAbs, maxAbs) {
+            let v;
+            do { v = randInt(minAbs, maxAbs); } while (v === 0 || isPowerOfTenInt(v)); // 10-et kizárjuk
+            return v;
+        }
+        function ensureTerminating(fr) {
+            return !fracToDecimalString(fr).includes("/");
+        }
+
+        /* ==========================
+           KÉRDÉS DEFINÍCIÓK (8+8)
+        ========================== */
+        const QUESTION_SLOTS = [
+            // 1-8: törtek
+            { id: 1, domain: "FRAC", kind: "F_ADD_SIMPLE", desc: "Tört + tört" },
+            { id: 2, domain: "FRAC", kind: "F_SUB_SIMPLE", desc: "Tört − tört" },
+            { id: 3, domain: "FRAC", kind: "F_ADD_MIXED", desc: "Vegyes + vegyes" },
+            { id: 4, domain: "FRAC", kind: "F_MUL_INT", desc: "Tört · egész" },
+            { id: 5, domain: "FRAC", kind: "F_MUL_FRAC", desc: "Tört · tört" },
+            { id: 6, domain: "FRAC", kind: "F_DIV_FRAC", desc: "Tört : tört" },
+            { id: 7, domain: "FRAC", kind: "F_BRACKET_MUL", desc: "a · (b + c)" },
+            { id: 8, domain: "FRAC", kind: "F_BRACKET_DIV", desc: "a : (b − c)" },
+
+            // 9-16: tizedesek
+            { id: 9, domain: "DEC", kind: "D_ADD_2", allowNeg: false, desc: "Összeadás (2 tag)" },
+            { id: 10, domain: "DEC", kind: "D_ADD_4_BR", allowNeg: false, desc: "Összeadás (4 tag, zárójel)" },
+            { id: 11, domain: "DEC", kind: "D_SUB_NEG", allowNeg: true, desc: "Kivonás (negatívval)" },
+            { id: 12, domain: "DEC", kind: "D_MUL_NEG", allowNeg: true, desc: "Szorzás (negatívval)" },
+            { id: 13, domain: "DEC", kind: "D_DIV_INT", allowNeg: false, desc: "Osztás (osztó egész)" },
+            { id: 14, domain: "DEC", kind: "D_DIV_DEC", allowNeg: false, desc: "Osztás (osztó tizedes)" },
+            { id: 15, domain: "DEC", kind: "D_BR_MUL_PLUS", allowNeg: false, desc: "a · (b + c)" },
+            { id: 16, domain: "DEC", kind: "D_BR_DIV_MINUS_N", allowNeg: true, desc: "a : (b − c) (negatív is lehet)" },
+        ];
+
+        /* ==========================
+           KÉRDÉS GENERÁLÁS
+        ========================== */
+        function makeProperFraction() {
+            const d = randInt(2, 12);
+            let n;
+            do { n = randInt(1, d - 1); } while (n === 0);
+            return simplifyFrac({ n, d });
+        }
+        function makeMixedNumber() {
+            const whole = randInt(1, 4);
+            const frac = makeProperFraction();
+            return { whole, frac };
+        }
+        function mixedToFrac(m) {
+            return simplifyFrac({ n: m.whole * m.frac.d + m.frac.n, d: m.frac.d });
+        }
+
+        function makeFracQuestion(slot) {
+            for (let tries = 0; tries < 600; tries++) {
+                if (slot.kind === "F_ADD_SIMPLE") {
+                    const a = makeProperFraction(), b = makeProperFraction();
+                    const res = addFrac(a, b);
+                    return {
+                        slot, inputMode: "FRAC",
+                        exprHTML: `${fracHTML(a)}<span class="op">+</span>${fracHTML(b)}`,
+                        correctFrac: res,
+                        user: { w: "", n: "", d: "" }
+                    };
+                }
+                if (slot.kind === "F_SUB_SIMPLE") {
+                    let a = makeProperFraction(), b = makeProperFraction();
+                    if (fracValueCmp(a, b) < 0) { const t = a; a = b; b = t; }
+                    const res = subFrac(a, b);
+                    return {
+                        slot, inputMode: "FRAC",
+                        exprHTML: `${fracHTML(a)}<span class="op">−</span>${fracHTML(b)}`,
+                        correctFrac: res,
+                        user: { w: "", n: "", d: "" }
+                    };
+                }
+                if (slot.kind === "F_ADD_MIXED") {
+                    const m1 = makeMixedNumber();
+                    const m2 = makeMixedNumber();
+                    const f1 = mixedToFrac(m1), f2 = mixedToFrac(m2);
+                    const res = addFrac(f1, f2);
+                    return {
+                        slot, inputMode: "FRAC",
+                        exprHTML: `${mixedHTML(m1.whole, m1.frac)}<span class="op">+</span>${mixedHTML(m2.whole, m2.frac)}`,
+                        correctFrac: res,
+                        user: { w: "", n: "", d: "" }
+                    };
+                }
+                if (slot.kind === "F_MUL_INT") {
+                    const a = makeProperFraction();
+                    const k = randInt(2, 9); // 10 nincs
+                    const res = mulFrac(a, { n: k, d: 1 });
+                    return {
+                        slot, inputMode: "FRAC",
+                        exprHTML: `${fracHTML(a)}<span class="op">·</span><span class="whole">${k}</span>`,
+                        correctFrac: res,
+                        user: { w: "", n: "", d: "" }
+                    };
+                }
+                if (slot.kind === "F_MUL_FRAC") {
+                    const a = makeProperFraction(), b = makeProperFraction();
+                    const res = mulFrac(a, b);
+                    return {
+                        slot, inputMode: "FRAC",
+                        exprHTML: `${fracHTML(a)}<span class="op">·</span>${fracHTML(b)}`,
+                        correctFrac: res,
+                        user: { w: "", n: "", d: "" }
+                    };
+                }
+                if (slot.kind === "F_DIV_FRAC") {
+                    const a = makeProperFraction(), b = makeProperFraction();
+                    const res = divFrac(a, b);
+                    return {
+                        slot, inputMode: "FRAC",
+                        exprHTML: `${fracHTML(a)}<span class="op">:</span>${fracHTML(b)}`,
+                        correctFrac: res,
+                        user: { w: "", n: "", d: "" }
+                    };
+                }
+                if (slot.kind === "F_BRACKET_MUL") {
+                    const a = makeProperFraction(), b = makeProperFraction(), c = makeProperFraction();
+                    const inner = addFrac(b, c);
+                    const res = mulFrac(a, inner);
+                    return {
+                        slot, inputMode: "FRAC",
+                        exprHTML: `${fracHTML(a)}<span class="op">·</span><span class="paren">(</span>${fracHTML(b)}<span class="op">+</span>${fracHTML(c)}<span class="paren">)</span>`,
+                        correctFrac: res,
+                        user: { w: "", n: "", d: "" }
+                    };
+                }
+                if (slot.kind === "F_BRACKET_DIV") {
+                    const a = makeProperFraction();
+                    let b = makeProperFraction(), c = makeProperFraction();
+                    if (fracValueCmp(b, c) <= 0) { const t = b; b = c; c = t; }
+                    const inner = subFrac(b, c);
+                    if (inner.n === 0) continue;
+                    const res = divFrac(a, inner);
+                    return {
+                        slot, inputMode: "FRAC",
+                        exprHTML: `${fracHTML(a)}<span class="op">:</span><span class="paren">(</span>${fracHTML(b)}<span class="op">−</span>${fracHTML(c)}<span class="paren">)</span>`,
+                        correctFrac: res,
+                        user: { w: "", n: "", d: "" }
+                    };
+                }
+            }
+            return {
+                slot, inputMode: "FRAC",
+                exprHTML: `${fracHTML({ n: 1, d: 2 })}<span class="op">+</span>${fracHTML({ n: 1, d: 3 })}`,
+                correctFrac: addFrac({ n: 1, d: 2 }, { n: 1, d: 3 }),
+                user: { w: "", n: "", d: "" }
+            };
+        }
+
+        function makeDecQuestion(slot) {
+            const maxAbs = 9, maxDp = 3;
+            for (let tries = 0; tries < 900; tries++) {
+                if (slot.kind === "D_ADD_2") {
+                    const a = makeTermDec(maxAbs, maxDp, slot.allowNeg);
+                    const b = makeTermDec(maxAbs, maxDp, slot.allowNeg);
+                    const res = addFrac(a.frac, b.frac);
+                    if (!ensureTerminating(res)) continue;
+                    if (isTenScalingFrac(a.frac) || isTenScalingFrac(b.frac)) continue;
+                    return {
+                        slot, inputMode: "DEC",
+                        exprHTML: `<span class="${a.neg ? 'negative' : ''}">${a.hu}</span><span class="op">+</span><span class="${b.neg ? 'negative' : ''}">${b.hu}</span>`,
+                        correctFrac: res,
+                        user: { text: "" }
+                    };
+                }
+                if (slot.kind === "D_ADD_4_BR") {
+                    const t1 = makeTermDec(maxAbs, maxDp, slot.allowNeg);
+                    const t2 = makeTermDec(maxAbs, maxDp, slot.allowNeg);
+                    const t3 = makeTermDec(maxAbs, maxDp, slot.allowNeg);
+                    const t4 = makeTermDec(maxAbs, maxDp, slot.allowNeg);
+
+                    if ([t1, t2, t3, t4].some(t => isTenScalingFrac(t.frac))) continue;
+
+                    const res = addFrac(addFrac(addFrac(t1.frac, t2.frac), t3.frac), t4.frac);
+                    if (!ensureTerminating(res)) continue;
+
+                    const expr = `<span class="paren">(</span><span class="${t1.neg ? 'negative' : ''}">${t1.hu}</span><span class="op">+</span><span class="${t2.neg ? 'negative' : ''}">${t2.hu}</span><span class="paren">)</span><span class="op">+</span><span class="${t3.neg ? 'negative' : ''}">${t3.hu}</span><span class="op">+</span><span class="${t4.neg ? 'negative' : ''}">${t4.hu}</span>`;
+                    return { slot, inputMode: "DEC", exprHTML: expr, correctFrac: res, user: { text: "" } };
+                }
+                if (slot.kind === "D_SUB_NEG") {
+                    const a = makeTermDec(maxAbs, maxDp, true);
+                    const b = makeTermDec(maxAbs, maxDp, true);
+                    if (isTenScalingFrac(a.frac) || isTenScalingFrac(b.frac)) continue;
+                    const res = subFrac(a.frac, b.frac);
+                    if (!ensureTerminating(res)) continue;
+                    return {
+                        slot, inputMode: "DEC",
+                        exprHTML: `<span class="${a.neg ? 'negative' : ''}">${a.hu}</span><span class="op">−</span><span class="${b.neg ? 'negative' : ''}">${b.hu}</span>`,
+                        correctFrac: res, user: { text: "" }
+                    };
+                }
+                if (slot.kind === "D_MUL_NEG") {
+                    const a = makeTermDec(maxAbs, maxDp, true);
+                    const b = makeTermDec(maxAbs, maxDp, true);
+                    if (isTenScalingFrac(a.frac) || isTenScalingFrac(b.frac)) continue; // ne legyen 0,1 stb.
+                    const res = mulFrac(a.frac, b.frac);
+                    if (!ensureTerminating(res)) continue;
+                    return {
+                        slot, inputMode: "DEC",
+                        exprHTML: `<span class="${a.neg ? 'negative' : ''}">${a.hu}</span><span class="op">·</span><span class="${b.neg ? 'negative' : ''}">${b.hu}</span>`,
+                        correctFrac: res, user: { text: "" }
+                    };
+                }
+                if (slot.kind === "D_DIV_INT") {
+                    const a = makeTermDec(maxAbs, maxDp, false);
+                    const k = makeIntegerDivisor(2, 12); // 10 kizárva
+                    const res = divFrac(a.frac, { n: k, d: 1 });
+                    if (!ensureTerminating(res)) continue;
+                    return {
+                        slot, inputMode: "DEC",
+                        exprHTML: `<span>${a.hu}</span><span class="op">:</span><span class="whole">${k}</span>`,
+                        correctFrac: res, user: { text: "" }
+                    };
+                }
+                if (slot.kind === "D_DIV_DEC") {
+                    const a = makeTermDec(maxAbs, maxDp, false);
+                    const b = makeTermDec(maxAbs, maxDp, false);
+                    if (isTenScalingFrac(b.frac) || isTenScalingFrac(a.frac)) continue; // ne legyen osztás 0,1-gyel stb.
+                    const res = divFrac(a.frac, b.frac);
+                    if (!ensureTerminating(res)) continue;
+                    return {
+                        slot, inputMode: "DEC",
+                        exprHTML: `<span>${a.hu}</span><span class="op">:</span><span>${b.hu}</span>`,
+                        correctFrac: res, user: { text: "" }
+                    };
+                }
+                if (slot.kind === "D_BR_MUL_PLUS") {
+                    const a = makeTermDec(maxAbs, maxDp, false);
+                    const b = makeTermDec(maxAbs, maxDp, false);
+                    const c = makeTermDec(maxAbs, maxDp, false);
+                    if ([a, b, c].some(t => isTenScalingFrac(t.frac))) continue;
+
+                    const inner = addFrac(b.frac, c.frac);
+                    const res = mulFrac(a.frac, inner);
+                    if (!ensureTerminating(res)) continue;
+                    return {
+                        slot, inputMode: "DEC",
+                        exprHTML: `<span>${a.hu}</span><span class="op">·</span><span class="paren">(</span><span>${b.hu}</span><span class="op">+</span><span>${c.hu}</span><span class="paren">)</span>`,
+                        correctFrac: res, user: { text: "" }
+                    };
+                }
+                if (slot.kind === "D_BR_DIV_MINUS_N") {
+                    const a = makeTermDec(maxAbs, maxDp, true);
+                    const b = makeTermDec(maxAbs, maxDp, true);
+                    const c = makeTermDec(maxAbs, maxDp, true);
+
+                    if ([a, b, c].some(t => isTenScalingFrac(t.frac))) continue;
+
+                    const inner = subFrac(b.frac, c.frac);
+                    if (inner.n === 0) continue;
+                    if (isTenScalingFrac(inner)) continue; // ne legyen osztás (b-c)=0,1 stb.
+
+                    const res = divFrac(a.frac, inner);
+                    if (!ensureTerminating(res)) continue;
+
+                    return {
+                        slot, inputMode: "DEC",
+                        exprHTML: `<span class="${a.neg ? 'negative' : ''}">${a.hu}</span><span class="op">:</span><span class="paren">(</span><span class="${b.neg ? 'negative' : ''}">${b.hu}</span><span class="op">−</span><span class="${c.neg ? 'negative' : ''}">${c.hu}</span><span class="paren">)</span>`,
+                        correctFrac: res, user: { text: "" }
+                    };
+                }
+            }
+            // fallback
+            const f = parseDecimalToFraction("4.6");
+            return { slot, inputMode: "DEC", exprHTML: `<span>1,2</span><span class="op">+</span><span>3,4</span>`, correctFrac: f, user: { text: "" } };
+        }
+
+        function generateQuestions() {
+            return QUESTION_SLOTS.map(slot => slot.domain === "FRAC" ? makeFracQuestion(slot) : makeDecQuestion(slot));
+        }
+
+        /* ==========================
+           APP STATE
+        ========================== */
+        let questions = [];
+        let currentIndex = 0;
+        let studentName = "";
+        let startTime = null;
+
+        function showScreen(id) {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("game-screen").style.display = "none";
+            document.getElementById("report-screen").style.display = "none";
+            document.getElementById(id).style.display = (id === "start-screen") ? "flex" : "block";
+        }
+
+        function updateTypePill(q) {
+            const box = document.getElementById("type-pill");
+            if (q.slot.domain === "FRAC") {
+                box.innerHTML = `<span class="tag tag-frac">TÖRT</span> <span style="font-weight:900; color:#e0f2f1;">${q.slot.desc}</span>`;
+            } else {
+                box.innerHTML = `<span class="tag tag-dec">TIZEDES</span> <span style="font-weight:900; color:#ede7f6;">${q.slot.desc}</span>`;
+            }
+        }
+
+        /* ==========================
+           MENTÉS / FOLYTATÁS
+        ========================== */
+        function saveState() {
+            const payload = {
+                studentName,
+                currentIndex,
+                startTime: startTime ? startTime.toISOString() : null,
+                questions
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        }
+        function loadState() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return false;
+            try {
+                const payload = JSON.parse(raw);
+                if (!payload || !payload.studentName || !payload.questions || payload.questions.length !== TOTAL_QUESTIONS) return false;
+                studentName = payload.studentName;
+                currentIndex = payload.currentIndex ?? 0;
+                startTime = payload.startTime ? new Date(payload.startTime) : null;
+                questions = payload.questions;
+
+                document.getElementById("resume-name").innerText = studentName;
+                document.getElementById("resume-progress").innerText = `${currentIndex + 1} / ${TOTAL_QUESTIONS}`;
+                document.getElementById("resume-area").style.display = "flex";
+                return true;
+            } catch { return false; }
+        }
+        function clearState() { localStorage.removeItem(STORAGE_KEY); }
+        function resumeGame() {
+            document.getElementById("display-name").innerText = studentName;
+            showScreen("game-screen");
+            loadQuestion(currentIndex);
+        }
+        function resetAndStartNew() {
+            clearState();
+            window.location.reload();
+        }
+
+        /* ==========================
+           INPUT UI (tört vagy tizedes)
+        ========================== */
+        function renderAnswerInputs(q) {
+            const wrap = document.getElementById("answer-section");
+            wrap.innerHTML = "";
+
+            if (q.inputMode === "DEC") {
+                const inp = document.createElement("input");
+                inp.type = "text";
+                inp.id = "inp-dec";
+                inp.className = "decimal-input";
+                inp.placeholder = "Válasz (pl. 3,25 vagy -1,5)";
+                inp.inputMode = "decimal";
+                inp.value = (q.user && q.user.text) ? q.user.text : "";
+                wrap.appendChild(inp);
+
+                const hint = document.createElement("div");
+                hint.className = "input-hint";
+                hint.innerHTML = `Tipp: a <strong>vessző</strong> és a <strong>pont</strong> is jó (3,25 = 3.25).`;
+                wrap.appendChild(hint);
+
+                setTimeout(() => inp.focus(), 0);
+                return;
+            }
+
+            // FRAC (új, régi stílusú tört input)
+            const row = document.createElement("div");
+            row.className = "frac-answer-row";
+
+            // Egész
+            const wholeBox = document.createElement("div");
+            wholeBox.className = "whole-input";
+            const wl = document.createElement("label");
+            wl.textContent = "Egész (ha van)";
+            wl.htmlFor = "inp-w";
+            const wi = document.createElement("input");
+            wi.id = "inp-w";
+            wi.type = "text";
+            wi.inputMode = "numeric";
+            wi.placeholder = "pl. 2";
+            wi.value = q.user?.w ?? "";
+            wholeBox.appendChild(wl);
+            wholeBox.appendChild(wi);
+
+            // Tört (számláló / nevező)
+            const fracBox = document.createElement("div");
+            fracBox.className = "frac-input";
+            const fl = document.createElement("label");
+            fl.textContent = "Tört rész";
+            fracBox.appendChild(fl);
+
+            const stack = document.createElement("div");
+            stack.className = "frac-stack";
+
+            const ni = document.createElement("input");
+            ni.id = "inp-n";
+            ni.type = "text";
+            ni.inputMode = "numeric";
+            ni.placeholder = "számláló";
+            ni.value = q.user?.n ?? "";
+
+            const bar = document.createElement("div");
+            bar.className = "frac-bar";
+
+            const di = document.createElement("input");
+            di.id = "inp-d";
+            di.type = "text";
+            di.inputMode = "numeric";
+            di.placeholder = "nevező";
+            di.value = q.user?.d ?? "";
+
+            stack.appendChild(ni);
+            stack.appendChild(bar);
+            stack.appendChild(di);
+
+            fracBox.appendChild(stack);
+
+            row.appendChild(wholeBox);
+            row.appendChild(fracBox);
+
+            wrap.appendChild(row);
+
+            const hint = document.createElement("div");
+            hint.className = "input-hint";
+            hint.innerHTML = `Példa: <strong>2</strong> és <strong>1</strong>/<strong>3</strong>. Ha nincs egész rész, hagyd üresen.`;
+            wrap.appendChild(hint);
+
+            setTimeout(() => ni.focus(), 0);
+        }
+
+        function saveCurrentAnswer() {
+            const q = questions[currentIndex];
+            if (q.inputMode === "DEC") {
+                const el = document.getElementById("inp-dec");
+                q.user = { text: (el?.value ?? "").trim() };
+            } else {
+                const w = (document.getElementById("inp-w")?.value ?? "").trim();
+                const n = (document.getElementById("inp-n")?.value ?? "").trim();
+                const d = (document.getElementById("inp-d")?.value ?? "").trim();
+                q.user = { w, n, d };
+            }
+            questions[currentIndex] = q;
+            saveState();
+        }
+
+        function getAnswerPreviewText(q) {
+            if (q.inputMode === "DEC") {
+                return (q.user?.text ?? "").trim();
+            }
+            const w = (q.user?.w ?? "").trim();
+            const n = (q.user?.n ?? "").trim();
+            const d = (q.user?.d ?? "").trim();
+
+            if (w !== "" && n === "" && d === "") return w;
+            if (n !== "" && d !== "") {
+                return (w !== "" ? `${w} ` : "") + `${n}/${d}`;
+            }
+            return "";
+        }
+
+        function parseUserAnswerToFrac(q) {
+            if (q.inputMode === "DEC") {
+                return parseDecimalToFraction((q.user?.text ?? "").trim());
+            }
+            return parseMixedAnswer(q.user || { w: "", n: "", d: "" });
+        }
+
+        /* ==========================
+           KÉRDÉS BETÖLTÉS / NAV
+        ========================== */
+        function loadQuestion(idx) {
+            currentIndex = idx;
+            const q = questions[currentIndex];
+
+            document.getElementById("display-name").innerText = studentName;
+            document.getElementById("progress-text").innerText = `${currentIndex + 1} / ${TOTAL_QUESTIONS}. feladat`;
+
+            updateTypePill(q);
+            document.getElementById("problem-box").innerHTML = q.exprHTML;
+
+            renderAnswerInputs(q);
+
+            document.getElementById("btn-prev").style.display = (currentIndex === 0) ? "none" : "inline-block";
+            document.getElementById("btn-next").textContent = (currentIndex === TOTAL_QUESTIONS - 1) ? "Beadás ✅" : "Következő ➡️";
+
+            saveState();
+        }
+
+        function prevProblem() {
+            if (FINALIZED) return;
+            saveCurrentAnswer();
+            if (currentIndex > 0) loadQuestion(currentIndex - 1);
+        }
+
+        function attemptNext() {
+            if (FINALIZED) return;
+
+            saveCurrentAnswer();
+            const q = questions[currentIndex];
+
+            const preview = getAnswerPreviewText(q);
+            if (!preview) {
+                alert("Kérlek add meg a választ!");
+                return;
+            }
+
+            const frac = parseUserAnswerToFrac(q);
+            if (!frac) {
+                if (q.inputMode === "DEC") {
+                    alert("Nem értelmezhető tizedes szám. Példa: 3,25 vagy -1,5");
+                } else {
+                    alert("Hibás tört megadás. Példa: egész üres, számláló 3, nevező 4. Vagy csak egész (pl. 2).");
+                }
+                return;
+            }
+
+            openModal(preview);
+        }
+
+        /* ==========================
+           MODAL
+        ========================== */
+        function openModal(answerText) {
+            document.getElementById("modal-answer-display").innerText = answerText;
+            document.getElementById("confirm-modal").style.display = "flex";
+        }
+        function closeModal(confirmed) {
+            document.getElementById("confirm-modal").style.display = "none";
+            if (!confirmed) return;
+
+            if (currentIndex < TOTAL_QUESTIONS - 1) {
+                loadQuestion(currentIndex + 1);
+            } else {
+                finishGame();
+            }
+        }
+
+        /* ==========================
+           KIÉRTÉKELÉS + JEGY
+        ========================== */
+        function gradeFromPercent(p) {
+            if (p >= 90) return 5;
+            if (p >= 75) return 4;
+            if (p >= 60) return 3;
+            if (p >= 40) return 2;
+            return 1;
+        }
+
+        function finishGame() {
+            const endTime = new Date();
+            const minutes = startTime ? ((endTime - startTime) / 60000) : 0;
+
+            let correct = 0;
+            const lines = [];
+            lines.push(`Név: ${studentName}`);
+            lines.push(`Idő: ${minutes.toFixed(1)} perc`);
+            lines.push(`Teszt: Műveletek racionális számokkal (8+8)`);
+            lines.push(`---`);
+
+            questions.forEach((q, i) => {
+                const userFrac = parseUserAnswerToFrac(q);
+                const ok = userFrac && equalFrac(userFrac, q.correctFrac);
+                if (ok) correct++;
+
+                const userText = getAnswerPreviewText(q) || "∅";
+                const correctText = (q.slot.domain === "DEC")
+                    ? toHuDecimal(fracToDecimalString(q.correctFrac))
+                    : fracToMixedText(q.correctFrac);
+
+                const tag = (q.slot.domain === "DEC") ? "TIZEDES" : "TÖRT";
+                lines.push(`${i + 1}. [${tag}] ${q.slot.desc} | Válasz: ${userText} | Helyes: ${correctText} | ${ok ? "✅" : "❌"}`);
+            });
+
+            const total = TOTAL_QUESTIONS;
+            const percent = Math.round((correct / total) * 100);
+            const grade = gradeFromPercent(percent);
+
+            document.getElementById("final-score").innerText = String(correct);
+            document.getElementById("final-max").innerText = String(total);
+            document.getElementById("final-percent").innerText = String(percent);
+            document.getElementById("final-grade").innerText = String(grade);
+
+            const reportText = lines.join("\n");
+            document.getElementById("report-output").value = reportText;
+
+            window.__REPORT_PACKAGE__ = {
+                name: studentName,
+                score: correct,
+                correct: correct,
+                total: total,
+                time: minutes.toFixed(1),
+                settings: "Műveletek racionális számokkal | 8 tört + 8 tizedes | nincs 10/100 szorzás-osztás",
+                log: reportText
+            };
+
+            // Küldés gomb
+            const btn = document.getElementById("btn-send-data");
+            const status = document.getElementById("status-message");
+            const configured = !(GOOGLE_SCRIPT_URL === "IDE_MASOLD_BE_A_GOOGLE_SCRIPT_LINKET" || GOOGLE_SCRIPT_URL === "");
+
+            btn.style.display = "block";
+            btn.disabled = !configured;
+            status.innerText = configured ? "" : "⚠️ A küldés nincs beállítva (GOOGLE_SCRIPT_URL üres).";
+
+            // LEZÁRÁS
+            FINALIZED = true;
+            lockNavigationAfterSubmit();
+            clearState();
+
+            showScreen("report-screen");
+        }
+
+        /* ==========================
+           REPORT: másolás + küldés
+        ========================== */
+        function copyReport() {
+            const ta = document.getElementById("report-output");
+            ta.select();
+            ta.setSelectionRange(0, ta.value.length);
+            document.execCommand("copy");
+            alert("Másolva a vágólapra!");
+        }
+
+        function sendReportToGoogle() {
+            const status = document.getElementById("status-message");
+            const btn = document.getElementById("btn-send-data");
+
+            if (GOOGLE_SCRIPT_URL === "IDE_MASOLD_BE_A_GOOGLE_SCRIPT_LINKET" || GOOGLE_SCRIPT_URL === "") {
+                status.innerText = "⚠️ Nincs beállítva a Google Script link (GOOGLE_SCRIPT_URL).";
+                return;
+            }
+
+            const data = window.__REPORT_PACKAGE__ || {};
+            btn.disabled = true;
+            btn.textContent = "Küldés...";
+
+            const body = new URLSearchParams();
+            for (const [k, v] of Object.entries(data)) body.append(k, String(v ?? ""));
+
+            fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body })
+                .then(() => {
+                    status.innerText = "✅ Küldés megtörtént! (Nézd a táblázatot.)";
+                    btn.style.display = "none";
+                })
+                .catch(() => {
+                    status.innerText = "❌ Hiba a küldéskor. Másold ki a jelentést tartaléknak.";
+                    btn.disabled = false;
+                    btn.textContent = "🚀 Eredmény küldése a Tanárnak";
+                });
+        }
+
+        /* ==========================
+           PDF GENERÁLÁS (új)
+           - új kérdéssor (16 db) + megoldókulcs a PDF végén
+        ========================== */
+        function stripHTML(html) {
+            const tmp = document.createElement("div");
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || "";
+        }
+
+        function buildPdfContent(qs) {
+            const host = document.getElementById("pdf-render");
+            host.innerHTML = "";
+
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, "0")}.${String(today.getDate()).padStart(2, "0")}.`;
+
+            const title = document.createElement("h2");
+            title.textContent = "Műveletek racionális számokkal";
+            host.appendChild(title);
+
+            const meta = document.createElement("div");
+            meta.className = "pdf-meta";
+            meta.innerHTML = `Dátum: ${dateStr} &nbsp; | &nbsp; Név: ___________________________`;
+            host.appendChild(meta);
+
+            const sec1 = document.createElement("div");
+            sec1.className = "pdf-section";
+            sec1.innerHTML = `<h3>Feladatsor (16 feladat)</h3>`;
+            host.appendChild(sec1);
+
+            // Feladatok
+            qs.forEach((q, i) => {
+                const row = document.createElement("div");
+                row.className = "pdf-q";
+
+                const num = document.createElement("div");
+                num.className = "pdf-num";
+                num.textContent = `${i + 1}.`;
+
+                const expr = document.createElement("div");
+                expr.className = "pdf-expr";
+                // egyszerű szöveg + kis jelölés
+                const tag = (q.slot.domain === "DEC") ? "[Tizedes]" : "[Tört]";
+                expr.textContent = `${tag} ${stripHTML(q.exprHTML)}`;
+
+                const space = document.createElement("div");
+                space.className = "pdf-space";
+
+                const right = document.createElement("div");
+                right.style.flex = "1";
+                right.appendChild(expr);
+                right.appendChild(space);
+
+                row.appendChild(num);
+                row.appendChild(right);
+                host.appendChild(row);
+            });
+
+            const note = document.createElement("div");
+            note.className = "pdf-note";
+            note.textContent = "Megjegyzés: A megoldókulcs a dokumentum végén található (tanári példányhoz).";
+            host.appendChild(note);
+
+            // Megoldókulcs
+            const sec2 = document.createElement("div");
+            sec2.className = "pdf-section";
+            sec2.innerHTML = `<h3>Megoldókulcs (tanárnak)</h3>`;
+            host.appendChild(sec2);
+
+            qs.forEach((q, i) => {
+                const row = document.createElement("div");
+                row.className = "pdf-q";
+
+                const num = document.createElement("div");
+                num.className = "pdf-num";
+                num.textContent = `${i + 1}.`;
+
+                const ans = document.createElement("div");
+                ans.className = "pdf-ans";
+                const correctText = (q.slot.domain === "DEC")
+                    ? toHuDecimal(fracToDecimalString(q.correctFrac))
+                    : fracToMixedText(q.correctFrac);
+
+                ans.textContent = `${correctText}   (${q.slot.desc})`;
+
+                row.appendChild(num);
+                row.appendChild(ans);
+                host.appendChild(row);
+            });
+        }
+
+        function generatePdfFromNewQuestions() {
+            if (typeof html2pdf === "undefined") {
+                alert("A PDF generáláshoz internetkapcsolat kell (html2pdf könyvtár). Próbáld meg újratölteni az oldalt net mellett.");
+                return;
+            }
+
+            // új kérdéssor (független a folyamatban lévő teszttől)
+            const qs = generateQuestions();
+            buildPdfContent(qs);
+
+            const host = document.getElementById("pdf-render");
+
+            const opt = {
+                margin: 10,
+                filename: `Muveletek_racionalis_szamokkal_feladatsor_megoldokulcs.pdf`,
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(host).save();
+
+        }
+
+        /* ==========================
+           INDÍTÁS
+        ========================== */
+        document.getElementById("new-game-area").addEventListener("submit", (ev) => {
+            ev.preventDefault();
+            const inp = document.getElementById("name-input");
+            studentName = (inp.value || "").trim();
+            if (!studentName) { alert("Kérlek írd be a neved!"); return; }
+
+            questions = generateQuestions();
+            startTime = new Date();
+            currentIndex = 0;
+
+            saveState();
+            showScreen("game-screen");
+            loadQuestion(0);
+        });
+
+        window.addEventListener("load", () => {
+            const has = loadState();
+            if (has) {
+                const ok = confirm(`Találtam egy félbehagyott tesztet (${studentName}). Folytatod?`);
+                if (ok) {
+                    document.getElementById("display-name").innerText = studentName;
+                    showScreen("game-screen");
+                    loadQuestion(currentIndex);
+                } else {
+                    clearState();
+                    document.getElementById("resume-area").style.display = "none";
+                }
+            }
+        });
+
+        /* ==========================
+           PDF GENERÁLÁS (BIZTOS VERZIÓ)
+           - Diák: nincs megoldókulcs
+           - Tanár: a végén megoldókulcs
+        ========================== */
+        function ensurePdfLib() {
+            if (typeof html2pdf === "undefined") {
+                alert("A PDF generáláshoz internetkapcsolat kell (html2pdf könyvtár). Nézd meg, hogy betöltődött-e a CDN script.");
+                return false;
+            }
+            return true;
+        }
+
+        function stripHTML(html) {
+            const tmp = document.createElement("div");
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || "";
+        }
+
+        function formatDateHu(d) {
+            return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}.`;
+        }
+
+        function buildPdfContent(qs, includeKey) {
+            const host = document.getElementById("pdf-render");
+            if (!host) {
+                alert("Nincs #pdf-render elem az oldalon. Tedd be: <div id='pdf-render'></div> a body végére.");
+                return false;
+            }
+
+            host.innerHTML = "";
+
+            const today = new Date();
+            const dateStr = formatDateHu(today);
+
+            const title = document.createElement("h2");
+            title.textContent = "Műveletek racionális számokkal";
+            host.appendChild(title);
+
+            const meta = document.createElement("div");
+            meta.className = "pdf-meta";
+            meta.innerHTML = `Dátum: ${dateStr} &nbsp; | &nbsp; Név: ___________________________`;
+            host.appendChild(meta);
+
+            const sec1 = document.createElement("div");
+            sec1.className = "pdf-section";
+            sec1.innerHTML = `<h3>Feladatsor (16 feladat)</h3>`;
+            host.appendChild(sec1);
+
+            qs.forEach((q, i) => {
+                const row = document.createElement("div");
+                row.className = "pdf-q";
+
+                const num = document.createElement("div");
+                num.className = "pdf-num";
+                num.textContent = `${i + 1}.`;
+
+                const expr = document.createElement("div");
+                expr.className = "pdf-expr";
+                const tag = (q.slot.domain === "DEC") ? "[Tizedes]" : "[Tört]";
+                expr.textContent = `${tag} ${stripHTML(q.exprHTML)}`;
+
+                const space = document.createElement("div");
+                space.className = "pdf-space";
+
+                const right = document.createElement("div");
+                right.style.flex = "1";
+                right.appendChild(expr);
+                right.appendChild(space);
+
+                row.appendChild(num);
+                row.appendChild(right);
+                host.appendChild(row);
+            });
+
+            if (includeKey) {
+                const sec2 = document.createElement("div");
+                sec2.className = "pdf-section";
+                sec2.innerHTML = `<h3>Megoldókulcs (tanárnak)</h3>`;
+                host.appendChild(sec2);
+
+                qs.forEach((q, i) => {
+                    const row = document.createElement("div");
+                    row.className = "pdf-q";
+
+                    const num = document.createElement("div");
+                    num.className = "pdf-num";
+                    num.textContent = `${i + 1}.`;
+
+                    const ans = document.createElement("div");
+                    ans.className = "pdf-ans";
+                    const correctText = (q.slot.domain === "DEC")
+                        ? toHuDecimal(fracToDecimalString(q.correctFrac))
+                        : fracToMixedText(q.correctFrac);
+
+                    ans.textContent = `${correctText}   (${q.slot.desc})`;
+
+                    row.appendChild(num);
+                    row.appendChild(ans);
+                    host.appendChild(row);
+                });
+            }
+
+            return true;
+        }
+
+        function savePdfFromElement(element, filename) {
+            const opt = {
+                margin: 10,
+                filename,
+                image: { type: "jpeg", quality: 0.95 },
+                html2canvas: { scale: 2, backgroundColor: "#ffffff", useCORS: true },
+                jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+            };
+
+            // fontos: várjunk, hogy a DOM biztosan kirajzolódjon
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    html2pdf().set(opt).from(element).save();
+                });
+            });
+        }
+
+        function generatePdfStudent() {
+            if (!ensurePdfLib()) return;
+            const qs = generateQuestions(); // meglévő függvényed
+            const ok = buildPdfContent(qs, false);
+            if (!ok) return;
+            const host = document.getElementById("pdf-render");
+            savePdfFromElement(host, "Muveletek_racionalis_szamokkal_DIAK.pdf");
+        }
+
+        function generatePdfTeacher() {
+            if (!ensurePdfLib()) return;
+            const qs = generateQuestions();
+            const ok = buildPdfContent(qs, true);
+            if (!ok) return;
+            const host = document.getElementById("pdf-render");
+            savePdfFromElement(host, "Muveletek_racionalis_szamokkal_TANAR_MEGOLDOKULCS.pdf");
+        }
+
+    </script>
+</body>
+
+</html>

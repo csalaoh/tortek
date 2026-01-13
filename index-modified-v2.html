@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatFizHub - Gyakorló Oldalak</title>
+    <style>
+        :root {
+            --primary-grad-start: #4facfe;
+            --primary-grad-end: #00f2fe;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --radius: 18px;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom right, var(--primary-grad-start), var(--primary-grad-end));
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        header {
+            text-align: center;
+            padding: 50px 20px 30px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3.2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+        }
+
+        .card-icon {
+            font-size: 2.2rem;
+            width: 54px;
+            height: 54px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h3 {
+            margin: 10px 0 8px;
+            font-size: 1.3rem;
+        }
+
+        .card p {
+            margin: 0 0 16px;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .btn {
+            margin-top: auto;
+            background: linear-gradient(90deg, #06b6d4, #3b82f6);
+            color: white;
+            font-weight: 800;
+            text-align: center;
+            padding: 12px 14px;
+            border-radius: 12px;
+            box-shadow: 0 8px 18px rgba(59, 130, 246, 0.25);
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px 10px 40px;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 0.95rem;
+        }
+
+        footer p {
+            margin: 6px 0;
+        }
+
+        /* --- MOBIL NÉZET --- */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>MatFizHub</h1>
+        <p>Digitális gyakorlóterep diákoknak</p>
+    </header>
+
+    <div class="container">
+
+        <h2 class="section-title">📐 Matematika</h2>
+        <div class="grid">
+
+            <a href="tortmano.html" class="card">
+                <div class="card-icon" style="background-color: #fff0f0;">🍕</div>
+                <h3>Törtmanó</h3>
+                <p>Ismerkedj meg a törtek világával! Játékos feladatok és műveletek gyakorlása 6. osztályosoknak.</p>
+                <div class="btn">Indítás</div>
+            </a>
+
+            <a href="tortmano-teszt.html" class="card">
+                <div class="card-icon" style="background-color: #fff0f0;">💯</div>
+                <h3>Törtmanó Teszt</h3>
+                <p>Felmérő a törtek témaköréből. Lássuk, mennyire sikerült elsajátítani az anyagot!</p>
+                <div class="btn">Teszt indítása</div>
+            </a>
+
+            <!-- ÚJ: Kombó teszt (8+8) -->
+            <a href="racionalis-komboteszt.html" class="card">
+                <div class="card-icon" style="background-color: #f3e5f5;">🧪</div>
+                <h3>Műveletek racionális számokkal</h3>
+                <p>Kombó teszt: 16 feladat (8 törtes + 8 tizedes). Műveletek, zárójelek, negatív számok. (Nincs 10/100
+                    trükk.)</p>
+                <div class="btn">Teszt indítása</div>
+            </a>
+
+        </div>
+
+        <h2 class="section-title">⚡ Fizika</h2>
+        <div class="grid">
+
+            <a href="aramkor-gyak.html" class="card">
+                <div class="card-icon" style="background-color: #fff9e0;">💡</div>
+                <h3>Áramkörök kapcsolása</h3>
+                <p>Soros és párhuzamos kapcsolások mennyiségeinek kiszámítása Ohm törvénye alapján</p>
+                <div class="btn">Gyakorlás</div>
+            </a>
+
+            <a href="aramkor-teszt.html" class="card">
+                <div class="card-icon" style="background-color: #e0f7fa;">📝</div>
+                <h3>Áramkör Teszt</h3>
+                <p>Ellenőrizd a tudásodat! </p>
+                <div class="btn">Teszt indítása</div>
+            </a>
+
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2025 MatFizHub<br>Jó tanulást és gyakorlást!</p>
+        <p>Fejlesztő: Csányi László (DSZP)</p>
+    </footer>
+
+</body>
+
+</html>

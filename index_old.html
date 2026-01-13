@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="hu">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MatFizHub - Kezdőlap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- STÍLUS BEÁLLÍTÁSOK (CSS) --- */
+
+        :root {
+            /* Színpaletta */
+            --primary-grad-start: #4facfe;
+            --primary-grad-end: #00f2fe;
+            --text-dark: #2d3436;
+            --text-light: #636e72;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --accent-matek: #ff7675;
+            /* Pirosas a matekhoz */
+            --accent-fizika: #ffeaa7;
+            /* Sárgás a fizikához */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* --- FEJLÉC --- */
+        header {
+            background: linear-gradient(135deg, var(--primary-grad-start), var(--primary-grad-end));
+            color: white;
+            text-align: center;
+            padding: 80px 20px;
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 198, 251, 0.3);
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        header p {
+            font-size: 1.3rem;
+            margin-top: 10px;
+            font-weight: 400;
+            opacity: 0.95;
+        }
+
+        /* --- FŐ TARTALOM --- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin: 50px 0 25px 0;
+            display: flex;
+            align-items: center;
+            color: var(--text-dark);
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 35px;
+            background: var(--primary-grad-start);
+            margin-right: 15px;
+            border-radius: 4px;
+        }
+
+        /* --- KÁRTYA RÁCSRENDSZER --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        /* --- KÁRTYA DESING --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Kártya hover animáció */
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-grad-start);
+        }
+
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+        }
+
+        .card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin: 0 0 25px 0;
+            flex-grow: 1;
+            /* Ez tolja le a gombot az aljára */
+        }
+
+        .btn {
+            background: var(--text-dark);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-align: center;
+            font-weight: 600;
+            align-self: flex-start;
+            transition: background 0.3s;
+        }
+
+        .card:hover .btn {
+            background: linear-gradient(90deg, var(--primary-grad-start), var(--primary-grad-end));
+            box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4);
+        }
+
+        /* --- LÁBLÉC --- */
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding: 40px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            border-top: 1px solid #e1e1e1;
+        }
+
+        /* --- MOBIL NÉZET --- */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>MatFizHub</h1>
+        <p>Digitális gyakorlóterep diákoknak</p>
+    </header>
+
+    <div class="container">
+
+        <h2 class="section-title">📐 Matematika</h2>
+        <div class="grid">
+
+            <a href="tortmano.html" class="card">
+                <div class="card-icon" style="background-color: #fff0f0;">🍕</div>
+                <h3>Törtmanó</h3>
+                <p>Ismerkedj meg a törtek világával! Játékos feladatok és műveletek gyakorlása 6. osztályosoknak.</p>
+                <div class="btn">Indítás</div>
+            </a>
+
+            <a href="tortmano-teszt.html" class="card">
+                <div class="card-icon" style="background-color: #fff0f0;">💯</div>
+                <h3>Törtmanó Teszt</h3>
+                <p>Felmérő a törtek témaköréből. Lássuk, mennyire sikerült elsajátítani az anyagot!</p>
+                <div class="btn">Teszt indítása</div>
+            </a>
+
+        </div>
+
+        <h2 class="section-title">⚡ Fizika</h2>
+        <div class="grid">
+
+            <a href="aramkor-gyak.html" class="card">
+                <div class="card-icon" style="background-color: #fff9e0;">💡</div>
+                <h3>Áramkörök kapcsolása</h3>
+                <p>Soros és párhuzamos kapcsolások mennyiségeinek kiszámítása Ohm törvénye alapján</p>
+                <div class="btn">Gyakorlás</div>
+            </a>
+
+            <a href="aramkor-teszt.html" class="card">
+                <div class="card-icon" style="background-color: #e0f7fa;">📝</div>
+                <h3>Áramkör Teszt</h3>
+                <p>Ellenőrizd a tudásodat! </p>
+                <div class="btn">Teszt indítása</div>
+            </a>
+
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2025 MatFizHub<br>Jó tanulást és gyakorlást!</p>
+        <p>Fejlesztő: Csányi László (DSZP)</p>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="hu">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>Törtmanó</title>
+        <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f7fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+            -webkit-overflow-scrolling: touch; 
+        }
+        h1 { color: #006064; margin-bottom: 5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        /* --- KÉPERNYŐK --- */
+       #start-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+        #game-screen { display: none; }
+        #report-screen { display: none; padding: 20px; } 
+
+        #name-input { font-size: 1.5em; padding: 10px; border-radius: 10px; border: 2px solid #00bcd4; width: 80%; margin-bottom: 20px; text-align: center; }
+
+        /* --- KÖZÖS STÍLUSOK --- */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #006064;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            flex-wrap: wrap; 
+        }
+        .student-name-display { color: #80deea; font-size: 1.1em; }
+        .settings-box { background: #f1f8e9; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #c5e1a5; text-align: left; }
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .setting-item label { font-weight: bold; color: #558b2f; display:block; margin-bottom:5px;}
+        select, input[type="checkbox"] { padding: 8px; border-radius: 6px; border: 1px solid #bbb; width: 100%; background: #fff;} 
+        .checkbox-wrapper { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .checkbox-wrapper input { width: auto; }
+
+        .problem-container { 
+            margin: 20px 0; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; min-height: 100px; background-color: #fff;
+            padding: 20px; border-radius: 10px; border: 2px solid #b2ebf2; font-size: 1.6em;
+        }
+        .fraction { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 4px; }
+        .numerator { border-bottom: 2px solid #333; padding: 0 4px; display: block; text-align: center; width: 100%; }
+        .denominator { padding: 0 4px; display: block; text-align: center; width: 100%; }
+        .operator { margin: 0 10px; font-weight: bold; color: #00838f; }
+        .bracket { font-size: 1.4em; color: #d84315; font-weight: 300; margin: 0 2px; }
+        .whole-number { font-size: 1.2em; font-weight: bold; margin: 0 5px; }
+
+        .answer-section { 
+            background-color: #fafafa; border: 2px dashed #0288d1; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center;
+        }
+        .input-row { display: flex; align-items: center; gap: 15px; margin-top: 10px; }
+        .whole-input { width: 60px; height: 60px; font-size: 1.6em; text-align: center; border: 2px solid #ff9800; border-radius: 8px; }
+        .fraction-col { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+        .small-input { width: 60px; height: 45px; font-size: 1.3em; text-align: center; border: 2px solid #03a9f4; border-radius: 8px; }
+        .fraction-line { width: 60px; height: 3px; background: #333; }
+
+        /* --- SEGÍTSÉG DOBOZ --- */
+        #help-container {
+            display: none;
+            background-color: #fff8e1;
+            border: 2px solid #ffb300;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: left;
+            animation: fadeIn 0.5s;
+        }
+        .help-step {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #ffb300;
+            font-size: 1.1em;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- GOMBOK --- */
+        button { 
+            border: none; padding: 12px 25px; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: all 0.2s; margin: 5px; 
+            -webkit-appearance: none; 
+            appearance: none; 
+            touch-action: manipulation; 
+        }
+        .btn-start { background-color: #009688; color: white; width: 100%; max-width: 300px; font-size: 1.3em; margin-top: 10px;}
+        .btn-check { background-color: #00bcd4; color: white; }
+        .btn-next { background-color: #ff9800; color: white; display: none; }
+        .btn-finish { background-color: #d32f2f; color: white; float: right; font-size: 0.9em;}
+        .btn-reset { background-color: #8bc34a; color: white; width: 100%; margin-top: 10px;}
+        
+        .btn-help-yes { background-color: #ffca28; color: #3e2723; }
+        .btn-help-continue { background-color: #8bc34a; color: white; }
+        .btn-help-more { background-color: #03a9f4; color: white; }
+
+        /* ÚJ: KÜLDÉS GOMB STÍLUS */
+        .btn-send { background-color: #2196F3; color: white; width: 100%; margin-top:15px; font-size: 1.2em; display: none; }
+        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 10px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #feedback { margin-top: 20px; font-size: 1.1em; font-weight: bold; min-height: 30px; padding: 10px; border-radius: 8px; }
+        .correct { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .incorrect { background-color: #ffebee; color: #c62828; }
+        .warning { background-color: #fffde7; color: #f9a825; }
+
+        #report-output { width: 100%; font-family: monospace; padding: 15px; border: 2px solid #006064; border-radius: 8px; resize: none; box-sizing: border-box; }
+        .report-buttons button { padding: 15px 30px; font-size: 1.2em; }
+        
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        #status-message { margin-top: 15px; font-weight: bold; min-height: 1.5em; }
+    </style>
+    </head>
+    <body>
+
+        <h1>🦊 Törtmanó - műveletek törtekkel</h1>
+
+        <div class="container">
+
+            <div id="start-screen">
+                <h2>Szia! Hogy hívnak?</h2>
+                <p>A gyakorlás végén az eredményedet automatikusan elküldjük a
+                    tanárnak.</p>
+                <form id="login-form"
+                    style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <input type="text" id="name-input"
+                        placeholder="Írd ide a neved..." enterkeyhint="go"
+                        required>
+                    <button type="submit" class="btn-start">Indulhat a
+                        gyakorlás!</button>
+                </form>
+            </div>
+
+            <div id="game-screen">
+
+                <div class="top-bar">
+                    <div>
+                        <span class="student-name-display"
+                            id="display-name">Tanuló</span> |
+                        Szint: <span id="level-text">1. Kezdő</span>
+                    </div>
+                    <button class="btn-finish" onclick="finishSession()">📄
+                        Befejezés és Küldés</button>
+                </div>
+
+                <div class="settings-box">
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label>Feladat típusa:</label>
+                            <select id="op-mode" onchange="gameReset()">
+                                <option value="1">1. Összeadás /
+                                    Kivonás</option>
+                                <option value="2">2. Szorzás / Osztás
+                                    (Egésszel)</option>
+                                <option value="3">3. Szorzás (Tört ·
+                                    Tört)</option>
+                                <option value="4">4. Osztás (Tört :
+                                    Tört)</option>
+                                <option value="5" selected>5. Vegyes
+                                    (Minden)</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Nehézségi szint:</label>
+                            <select id="diff-level" onchange="gameReset()">
+                                <option value="1">1. Kezdő</option>
+                                <option value="2">2. Haladó</option>
+                                <option value="3">3. Mester</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Műveletek száma:</label>
+                            <select id="op-count" onchange="gameReset()">
+                                <option value="1">1 művelet</option>
+                                <option value="2">2 művelet</option>
+                                <option value="3">3 művelet</option>
+                                <option value="4">4 művelet</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="use-brackets"
+                            onchange="gameReset()">
+                        <label for="use-brackets">Legyen benne zárójel</label>
+                    </div>
+                    <button class="btn-reset" onclick="gameReset()">🔄 Új
+                        paraméterek alkalmazása</button>
+                </div>
+
+                <div class="problem-container" id="problem-box"></div>
+
+                <div id="help-container">
+                    <h3 style="color:#f57f17; margin-top:0;">💡 Segítség a
+                        Törtmanótól</h3>
+                    <div id="help-content-area"></div>
+                    <div id="help-controls" style="margin-top:10px;"></div>
+                </div>
+
+                <div class="answer-section">
+                    <div class="input-row">
+                        <span style="font-size: 2em;">=</span>
+                        <input type="number" id="inp-whole" class="whole-input"
+                            placeholder="E">
+                        <div class="fraction-col">
+                            <input type="number" id="inp-num"
+                                class="small-input" placeholder="Sz">
+                            <div class="fraction-line"></div>
+                            <input type="number" id="inp-denom"
+                                class="small-input" placeholder="N">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-check" onclick="checkAnswer()"
+                    id="check-btn">Ellenőrzés</button>
+                <button class="btn-next" onclick="generateProblem()"
+                    id="next-btn">Következő feladat</button>
+
+                <div id="feedback"></div>
+            </div>
+
+            <div id="report-screen">
+                <h2>📊 Gyakorlási Jelentés</h2>
+
+                <div id="status-message"></div>
+
+                <button id="btn-send-data" class="btn-send"
+                    onclick="sendReportToGoogle()">
+                    🚀 Eredmény küldése a Tanárnak
+                </button>
+
+                <p style="margin-top:20px; font-size:0.9em; color:#666;">
+                    Ha a küldés nem sikerülne, itt a biztonsági másolat:
+                </p>
+                <textarea id="report-output" readonly rows="10"></textarea>
+
+                <div class="report-buttons">
+                    <button onclick="copyReport()"
+                        style="background-color:#555; color:white; font-size:0.9em;">Másolás
+                        vágólapra (Tartalék)</button>
+                    <button onclick="window.location.reload()"
+                        style="background-color:#ff9800; color:white;">Újrakezdés</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        // ==========================================================
+        // CONFIG: IDE MÁSOLD BE A KAPOTT GOOGLE SCRIPT LINKET!
+        // ==========================================================
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymo37p92s9saK9CX7QSr-heJFpsVuJ0xxuV3aCLDZdRr1nahmDwVr-gFJ9DI94uzH2lw/exec"; 
+        // ==========================================================
+
+        // --- JÁTÉK ÁLLAPOT ---
+        let studentName = "";
+        let startTime;
+        let sessionLog = [];
+        let currentProblemText = ""; 
+        let currentSolution = null;
+        let streak = 0;
+        const STREAK_GOAL = 5;
+
+        // Segítség változók
+        let wrongAnswerCount = 0; 
+        let solutionSteps = [];   
+        let helpStepIndex = 0;    
+
+        // Adatcsomag a küldéshez
+        let reportDataPackage = null;
+
+        // --- MATEMATIKA ---
+        function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+        class Fraction {
+            constructor(n, d) {
+                if (d < 0) { n = -n; d = -d; }
+                this.n = parseInt(n);
+                this.d = parseInt(d);
+            }
+            simplify() {
+                const common = gcd(Math.abs(this.n), this.d);
+                return new Fraction(this.n / common, this.d / common);
+            }
+            add(f) { return new Fraction(this.n * f.d + f.n * this.d, this.d * f.d).simplify(); }
+            sub(f) { return new Fraction(this.n * f.d - f.n * this.d, this.d * f.d).simplify(); }
+            mult(f) { return new Fraction(this.n * f.n, this.d * f.d).simplify(); }
+            div(f) { 
+                if (f.n === 0) { return new Fraction(0, 1); }
+                return new Fraction(this.n * f.d, this.d * f.n).simplify(); 
+            }
+            isInteger() { return this.d === 1; }
+            toString() { return this.d === 1 ? `${this.n}` : `${this.n}/${this.d}`; }
+        }
+
+        // --- BELÉPÉS ---
+        function enterGame() {
+            const nameInput = document.getElementById('name-input').value.trim();
+            if(nameInput === "") {
+                alert("Kérlek írd be a neved!");
+                return;
+            }
+            if (document.activeElement) { document.activeElement.blur(); }
+
+            studentName = nameInput;
+            startTime = new Date();
+            
+            document.getElementById('display-name').innerText = studentName;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('report-screen').style.display = 'none';
+            
+            gameReset(); 
+        }
+
+        // --- SEGÉDFÜGGVÉNYEK ---
+        function getSettingsDescription() {
+            const opModeSelect = document.getElementById('op-mode');
+            const diffLevelSelect = document.getElementById('diff-level');
+            const opCountSelect = document.getElementById('op-count');
+            const useBrackets = document.getElementById('use-brackets').checked;
+
+            const modeText = opModeSelect.options[opModeSelect.selectedIndex].text;
+            const diffText = diffLevelSelect.options[diffLevelSelect.selectedIndex].text;
+            const countText = opCountSelect.options[opCountSelect.selectedIndex].text;
+            const bracketText = useBrackets ? "+ Zárójel" : "";
+
+            return `${diffText} | ${modeText} | ${countText} ${bracketText}`;
+        }
+
+        function getRandomFraction(diff, forceInteger = false) {
+            let maxNum = diff === "1" ? 5 : (diff === "2" ? 12 : 20);
+            const denoms = diff === "1" ? [2,3,4,5,10] : [2,3,4,5,6,8,9,10,12,15];
+            
+            if (forceInteger) return new Fraction(Math.floor(Math.random() * maxNum) + 1, 1);
+            
+            let d = denoms[Math.floor(Math.random() * denoms.length)];
+            let n;
+            do {
+                n = Math.floor(Math.random() * (d * 1.5)) + 1; 
+            } while (n % d === 0);
+
+            return new Fraction(n, d);
+        }
+
+        function gameReset() {
+            streak = 0;
+            const levelSelect = document.getElementById('diff-level');
+            document.getElementById('level-text').innerText = levelSelect.options[levelSelect.selectedIndex].text;
+            generateProblem();
+        }
+
+        function generateProblem() {
+            // UI Reset
+            document.getElementById('inp-whole').value = '';
+            document.getElementById('inp-num').value = '';
+            document.getElementById('inp-denom').value = '';
+            document.getElementById('feedback').innerText = '';
+            document.getElementById('feedback').className = '';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('check-btn').style.display = 'inline-block';
+            
+            // Segítség Reset
+            document.getElementById('help-container').style.display = 'none';
+            document.getElementById('help-content-area').innerHTML = '';
+            document.getElementById('help-controls').innerHTML = '';
+            wrongAnswerCount = 0;
+            solutionSteps = [];
+            helpStepIndex = 0;
+
+            const opMode = document.getElementById('op-mode').value;
+            const opCount = parseInt(document.getElementById('op-count').value);
+            const diff = document.getElementById('diff-level').value;
+            const useBrackets = document.getElementById('use-brackets').checked && opCount > 1;
+
+            let numbers = [];
+            let operators = [];
+            let allowedOps = (opMode === "1") ? ['+', '-'] : (opMode === "2" ? ['*', '/'] : (opMode === "3" ? ['*'] : (opMode === "4" ? ['/'] : ['+', '-', '*', '/'])));
+
+            for(let i=0; i<opCount; i++) operators.push(allowedOps[Math.floor(Math.random() * allowedOps.length)]);
+
+            if (opCount > 1 && allowedOps.length > 1) {
+                const firstOp = operators[0];
+                const allSame = operators.every(op => op === firstOp);
+                if (allSame) {
+                    let newOp;
+                    do {
+                        newOp = allowedOps[Math.floor(Math.random() * allowedOps.length)];
+                    } while (newOp === firstOp);
+                    operators[operators.length - 1] = newOp;
+                }
+            }
+
+            for(let i=0; i<=opCount; i++) {
+                let forceInt = (opMode === "2" && i % 2 !== 0); 
+                numbers.push(getRandomFraction(diff, forceInt));
+            }
+
+            let bStart = -1, bEnd = -1;
+            if (useBrackets) {
+                bStart = Math.floor(Math.random() * opCount);
+                bEnd = bStart + 1;
+            }
+
+            // HTML Generálás
+            let html = "";
+            let textLog = ""; 
+            const displayOps = { '+': '+', '-': '-', '*': '·', '/': ':' };
+
+            for(let i=0; i<numbers.length; i++) {
+                if (i === bStart) { html += `<span class="bracket">(</span>`; textLog += "("; }
+                if (numbers[i].isInteger()) {
+                    html += `<span class="whole-number">${numbers[i].n}</span>`;
+                    textLog += numbers[i].n;
+                } else {
+                    html += `<div class="fraction"><span class="numerator">${numbers[i].n}</span><span class="denominator">${numbers[i].d}</span></div>`;
+                    textLog += `${numbers[i].n}/${numbers[i].d}`;
+                }
+                if (i === bEnd) { html += `<span class="bracket">)</span>`; textLog += ")"; }
+                if (i < operators.length) {
+                    html += `<span class="operator">${displayOps[operators[i]]}</span>`;
+                    textLog += ` ${displayOps[operators[i]]} `;
+                }
+            }
+            document.getElementById('problem-box').innerHTML = html;
+            currentProblemText = textLog;
+
+            // --- SZÁMOLÁS ---
+            let workNums = [...numbers];
+            let workOps = [...operators];
+
+            const performOp = (f1, f2, op) => {
+                switch(op) {
+                    case '+': return f1.add(f2);
+                    case '-': return f1.sub(f2);
+                    case '*': return f1.mult(f2);
+                    case '/': return f1.div(f2);
+                    default: return f1;
+                }
+            };
+
+            const logStep = (f1, f2, op, result) => {
+                let opName = "";
+                if(op === '+') opName = "összeadást";
+                else if(op === '-') opName = "kivonást";
+                else if(op === '*') opName = "szorzást";
+                else if(op === '/') opName = "osztást";
+                let stepMsg = `Végezd el a <b>${opName}</b>: ${f1.toString()} ${displayOps[op]} ${f2.toString()}.`;
+                solutionSteps.push(stepMsg);
+            };
+            
+            if (useBrackets) {
+                let f1 = workNums[bStart];
+                let f2 = workNums[bStart+1];
+                let op = workOps[bStart];
+                let res = performOp(f1, f2, op);
+                logStep(f1, f2, op, res);
+                workNums.splice(bStart, 2, res);
+                workOps.splice(bStart, 1);
+            }
+
+            let i = 0;
+            while (i < workOps.length) {
+                if (workOps[i] === '*' || workOps[i] === '/') {
+                    let f1 = workNums[i];
+                    let f2 = workNums[i+1];
+                    let op = workOps[i];
+                    let res = performOp(f1, f2, op);
+                    logStep(f1, f2, op, res);
+                    workNums.splice(i, 2, res);
+                    workOps.splice(i, 1);
+                } else { i++; }
+            }
+
+            while (workOps.length > 0) {
+                let f1 = workNums[0];
+                let f2 = workNums[1];
+                let op = workOps[0];
+                let res = performOp(f1, f2, op);
+                logStep(f1, f2, op, res);
+                workNums.splice(0, 2, res);
+                workOps.shift();
+            }
+
+            currentSolution = workNums[0];
+            solutionSteps.push("Már csak az utolsó simítások: egyszerűsíts, ha lehet, vagy alakítsd vegyes számmá!");
+        }
+
+        // --- SEGÍTSÉG ---
+        function offerHelp() {
+            document.getElementById('help-container').style.display = 'block';
+            document.getElementById('help-content-area').innerHTML = "<p>Már háromszor próbáltad, de nem sikerült. Szeretnéd, ha segítenék az első lépésben?</p>";
+            document.getElementById('help-controls').innerHTML = `
+                <button class="btn-help-yes" onclick="showNextStep()">Igen, kérek segítséget</button>
+                <button onclick="hideHelp()">Nem, még próbálkozom</button>
+            `;
+        }
+
+        function showNextStep() {
+            const helpContent = document.getElementById('help-content-area');
+            const helpControls = document.getElementById('help-controls');
+
+            if (helpStepIndex < solutionSteps.length) {
+                let stepHtml = `<div class="help-step"><b>${helpStepIndex + 1}. Lépés:</b> ${solutionSteps[helpStepIndex]}</div>`;
+                helpContent.innerHTML = stepHtml;
+                helpStepIndex++; 
+                helpControls.innerHTML = `
+                    <button class="btn-help-continue" onclick="hideHelp()">Köszönöm, folytatom önállóan</button>
+                    ${helpStepIndex < solutionSteps.length ? '<button class="btn-help-more" onclick="showNextStep()">Még mindig elakadtam, mi a következő?</button>' : ''}
+                `;
+            } else {
+                helpContent.innerHTML += `<div class="help-step">Már minden lépésen végigmentünk! Az eredménynek <b>${currentSolution.toString()}</b>-nek kell lennie.</div>`;
+                helpControls.innerHTML = `<button class="btn-help-continue" onclick="hideHelp()">Beírom a megoldást</button>`;
+            }
+        }
+
+        function hideHelp() { document.getElementById('inp-whole').focus(); }
+
+        function checkAnswer() {
+            const feedback = document.getElementById('feedback');
+            let w = parseInt(document.getElementById('inp-whole').value) || 0;
+            let n = parseInt(document.getElementById('inp-num').value) || 0;
+            let dInput = document.getElementById('inp-denom').value;
+            let d = parseInt(dInput) || 1;
+
+            if (n !== 0 && (dInput === '' || dInput == 0)) {
+                feedback.innerHTML = "A nevező nem lehet üres vagy nulla!";
+                feedback.className = "incorrect";
+                return;
+            }
+
+            let totalNum = (w < 0) ? (w * d - n) : (w * d + n);
+            const userVal = new Fraction(totalNum, d);
+            const correct = currentSolution;
+
+            let isCorrect = (userVal.n * correct.d === correct.n * userVal.d);
+            let userText = (w !== 0 && n === 0) ? `${w}` : (w !== 0 ? `${w} ${n}/${d}` : `${n}/${d}`);
+            if(n===0 && w===0) userText = "0";
+
+            let logEntry = {
+                problem: currentProblemText,
+                userAnswer: userText,
+                correctAnswer: correct.d === 1 ? `${correct.n}` : `${correct.n}/${correct.d}`,
+                isCorrect: false,
+                note: "",
+                settingsDesc: getSettingsDescription()
+            };
+
+            if (isCorrect) {
+                if (Math.abs(n) >= Math.abs(d) && d !== 1) {
+                    feedback.innerHTML = "⚠️ <b>Jó számolás!</b> Helyes érték, de kérlek <b>alakítsd át vegyes számmá</b> a befejezéshez!";
+                    feedback.className = "warning";
+                    logEntry.note = "Jó érték, de áltört maradt";
+                    return; 
+                }
+                const common = gcd(Math.abs(n), d);
+                if (common > 1) {
+                    feedback.innerHTML = "⚠️ <b>Jó számolás!</b> Helyes érték, de kérlek <b>egyszerűsítsd</b> a törtet a befejezéshez!";
+                    feedback.className = "warning";
+                    logEntry.note = "Jó érték, de nincs egyszerűsítve";
+                    return;
+                }
+
+                feedback.innerHTML = `🎉 <b>Tökéletes válasz!</b><br>Ügyes vagy! A megoldás helyes: <b>${userText}</b>`;
+                feedback.className = "correct";
+                document.getElementById('next-btn').style.display = 'inline-block';
+                document.getElementById('check-btn').style.display = 'none';
+                document.getElementById('help-container').style.display = 'none';
+                
+                streak++;
+                if (streak >= STREAK_GOAL) {
+                    const levelSelect = document.getElementById('diff-level');
+                    if (levelSelect.selectedIndex < levelSelect.options.length - 1) {
+                        levelSelect.selectedIndex++;
+                        streak = 0;
+                        feedback.innerHTML += "<br>🏆 <b>GRATULÁLOK! SZINTLÉPÉS!</b><br>A következő feladatok kicsit nehezebbek lesznek.";
+                    }
+                }
+                
+                logEntry.isCorrect = true;
+                sessionLog.push(logEntry);
+
+            } else {
+                wrongAnswerCount++;
+                let attemptsLeft = 3 - wrongAnswerCount;
+                if (wrongAnswerCount >= 3) {
+                    feedback.innerHTML = "❌ Sajnos nem jó. Úgy látom elakadtál kicsit.";
+                    feedback.className = "incorrect";
+                    offerHelp(); 
+                } else {
+                    feedback.innerHTML = `❌ Sajnos nem jó. Próbáld újra! (Még ${attemptsLeft} próbálkozás a segítségig)`;
+                    feedback.className = "incorrect";
+                }
+                streak = 0;
+                sessionLog.push(logEntry);
+            }
+        }
+
+        // --- RIPORT ÉS KÜLDÉS ---
+        function finishSession() {
+            const endTime = new Date();
+            const timeDiffMs = endTime - startTime;
+            const timeDiffMin = Math.round(timeDiffMs / 1000 / 60); 
+            
+            let correctCount = sessionLog.filter(x => x.isCorrect).length;
+            let totalCount = sessionLog.length;
+            let score = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+            
+            // Beállítások kigyűjtése
+            const uniqueSettings = [...new Set(sessionLog.map(log => log.settingsDesc))];
+
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('report-screen').style.display = 'block';
+
+            // 1. Megjelenítendő Szöveg generálása (Backup)
+            let reportText = `TÖRTMANÓ JELENTÉS - ${studentName}\n`;
+            reportText += `Eredmény: ${score}% (${correctCount}/${totalCount})\n`;
+            reportText += `Idő: ${timeDiffMin} perc\n`;
+            reportText += `Beállítások: ${uniqueSettings.join(', ')}\n\n`;
+            reportText += `Részletek:\n`;
+            sessionLog.forEach((log, index) => {
+                let status = log.isCorrect ? "✅" : "❌";
+                reportText += `${index + 1}. ${status} [${log.settingsDesc}] ${log.problem} = ${log.userAnswer}`;
+                if (!log.isCorrect) reportText += ` (Helyes: ${log.correctAnswer})`;
+                reportText += `\n`;
+            });
+            
+            document.getElementById('report-output').value = reportText;
+
+            // 2. Adatcsomag összeállítása a Google Sheetnek
+            reportDataPackage = {
+                name: studentName,
+                score: score,
+                correct: correctCount,
+                total: totalCount,
+                time: timeDiffMin,
+                settings: uniqueSettings.join(', '),
+                log: reportText
+            };
+
+            // Gomb megjelenítése
+            const btnSend = document.getElementById('btn-send-data');
+            btnSend.style.display = 'block';
+            
+            // Ha nincs beállítva URL, jelezzük
+            // JAVÍTOTT VERZIÓ:
+            // Csak akkor szóljon, ha az eredeti szöveg maradt ott, vagy üres
+            if(GOOGLE_SCRIPT_URL === "IDE_MASOLD_BE_A_GOOGLE_SCRIPT_LINKET" || GOOGLE_SCRIPT_URL === "") {
+                document.getElementById('status-message').innerHTML = "⚠️ Nincs beállítva a tanári link! Használd a másolást.";
+                document.getElementById('status-message').style.color = "red";
+                btnSend.style.display = 'none';
+            }
+        }
+
+        function sendReportToGoogle() {
+            const btn = document.getElementById('btn-send-data');
+            const statusDiv = document.getElementById('status-message');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Küldés folyamatban...';
+            statusDiv.innerText = "";
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors", // Fontos a Google Scripthez
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(reportDataPackage)
+            })
+            .then(response => {
+                // Mivel 'no-cors' módban vagyunk, nem kapunk JSON választ, de ha ide eljut, valószínűleg sikerült.
+                statusDiv.innerHTML = "✅ Sikeresen elküldve! Köszönöm a munkát.";
+                statusDiv.style.color = "green";
+                btn.style.display = 'none'; // Eltüntetjük a gombot
+            })
+            .catch(error => {
+                console.error("Hiba:", error);
+                statusDiv.innerHTML = "❌ Hiba történt a küldéskor. Kérlek másold ki a lenti szöveget és küldd el Teamsen!";
+                statusDiv.style.color = "red";
+                btn.innerHTML = "Újrapróbálkozás";
+                btn.disabled = false;
+            });
+        }
+        
+        function copyReport() {
+            const reportOutput = document.getElementById('report-output');
+            reportOutput.select();
+            reportOutput.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            alert("✅ A jelentés másolva!");
+        }
+
+        window.onload = function() {
+            document.getElementById('start-screen').style.display = 'flex';
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('report-screen').style.display = 'none';
+
+            const loginForm = document.getElementById('login-form');
+            if(loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault(); 
+                    enterGame();
+                });
+            }
+        };
+    </script>
+    </body>
+</html>
